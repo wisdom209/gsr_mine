@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>French Lab — SRS + News Lab</title>
+<style>
+body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,sans-serif; background:#fafafa; }
+.main-header {
+  display:flex; align-items:center; gap:16px; padding:12px 20px; background:white; border-bottom:1px solid #e4e4e7;
+  position:sticky; top:0; z-index:100;
+}
+.main-brand { font-weight:800; font-size:1.1em; }
+.main-tabs { display:flex; gap:6px; background:#f4f4f5; padding:4px; border-radius:999px; margin-left:auto; }
+.main-tab {
+  border:none; background:transparent; padding:8px 16px; border-radius:999px; font-weight:600; font-size:0.9em;
+  cursor:pointer; color:#71717a;
+}
+.main-tab.active { background:white; color:#18181b; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+#cloudinary-badge {
+  font-size:0.75em; padding:4px 8px; border-radius:999px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; margin-left:12px;
+}
+#cloudinary-badge.off { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+</style>
+<style>
+#main-srs {
+      --bg: #ffffff;
+      --fg: #18181b;
+      --fg-muted: #71717a;
+      --fg-subtle: #a1a1aa;
+      --border: #e4e4e7;
+      --surface: #fafafa;
+      --surface-2: #f4f4f5;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --success: #16a34a;
+      --success-hover: #15803d;
+      --success-soft: #f0fdf4;
+      --warning: #f59e0b;
+      --warning-soft: #fffbeb;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --purple: #7c3aed;
+      --purple-soft: #f5f3ff;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
+      --shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md: 0 6px 20px rgba(0,0,0,0.06);
+    }#main-srs { box-sizing: border-box; }#main-srs, #main-srs {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }#main-srs { min-height: 100vh; }#main-srs .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }@media (min-width: 768px) {
+      .container { padding: 24px 24px 60px; }
+    }#main-srs header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }#main-srs .brand {
+      font-weight: 700;
+      font-size: 1.05em;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+    }#main-srs .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      padding: 4px;
+      margin-left: auto;
+    }#main-srs .tab {
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      font-size: 0.85em;
+      font-weight: 500;
+      color: var(--fg-muted);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }#main-srs .tab:hover:not(.active) { color: var(--fg); }#main-srs .tab.active {
+      background: var(--bg);
+      color: var(--fg);
+      box-shadow: var(--shadow-sm);
+    }#main-srs .progress-indicator {
+      font-size: 0.8em;
+      color: var(--fg-muted);
+      font-variant-numeric: tabular-nums;
+      margin-left: auto;
+      order: 3;
+      flex-basis: 100%;
+      text-align: right;
+      margin-top: 4px;
+    }@media (min-width: 600px) {
+      .progress-indicator {
+        order: 0;
+        flex-basis: auto;
+        margin-left: 0;
+        margin-top: 0;
+        margin-right: 12px;
+      }
+    }#main-srs .stats-mini {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }#main-srs .stat-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      text-align: center;
+      min-width: 0;
+    }#main-srs .stat-mini .num {
+      display: block;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }#main-srs .stat-mini .lbl {
+      display: block;
+      font-size: 0.65em;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }#main-srs .screen {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }#main-srs .screen h2 {
+      margin: 0 0 10px;
+      font-size: 1.35em;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }#main-srs .screen p {
+      margin: 0 0 24px;
+      color: var(--fg-muted);
+      line-height: 1.55;
+      font-size: 0.95em;
+    }#main-srs .screen .big-btn {
+      padding: 16px 34px;
+      font-size: 1em;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+      box-shadow: var(--shadow-sm);
+    }#main-srs .screen .big-btn:hover:not(:disabled) { background: var(--primary-hover); }#main-srs .screen .big-btn:active:not(:disabled) { transform: translateY(1px); }#main-srs .screen .big-btn:disabled {
+      background: var(--border);
+      color: var(--fg-subtle);
+      cursor: not-allowed;
+    }#main-srs .screen .meta-line {
+      font-size: 0.85em;
+      color: var(--fg-subtle);
+      margin-top: 4px;
+    }#main-srs .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px 28px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s;
+    }#main-srs .card:hover { box-shadow: var(--shadow); }#main-srs .card.hidden .en, #main-srs .card.hidden .fr { visibility: hidden; }#main-srs .badge {
+      position: absolute;
+      top: 14px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.65em;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }#main-srs .badge-new { background: #e4e4e7; color: #52525b; }#main-srs .badge-future { background: var(--primary-soft); color: #1e40af; }#main-srs .badge-due { background: #fed7aa; color: #9a3412; }#main-srs .badge-overdue { background: #fecaca; color: #991b1b; }#main-srs .badge-grad { background: #bbf7d0; color: #166534; }#main-srs .badge-role {
+      left: 14px;
+      background: var(--warning-soft);
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }#main-srs .badge-pass {
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--purple-soft);
+      color: var(--purple);
+      border: 1px solid #ddd6fe;
+    }#main-srs .badge-state { right: 14px; }#main-srs .en {
+      font-size: 1em;
+      color: #52525b;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }#main-srs .fr {
+      font-size: 1.45em;
+      font-weight: 600;
+      color: var(--fg);
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }#main-srs .prompt {
+      margin-top: 18px;
+      font-size: 0.88em;
+      color: var(--purple);
+      padding: 10px 14px;
+      background: var(--purple-soft);
+      border-radius: var(--radius-xs);
+      border-left: 3px solid var(--purple);
+      display: none;
+      line-height: 1.45;
+    }#main-srs .prompt.show { display: block; }#main-srs .meta {
+      font-size: 0.72em;
+      color: var(--fg-subtle);
+      margin-top: 16px;
+      font-variant-numeric: tabular-nums;
+    }#main-srs button { font-family: inherit; }#main-srs .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 8px;
+    }#main-srs .btn {
+      padding: 13px 12px;
+      font-size: 0.9em;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.05s;
+      touch-action: manipulation;
+    }#main-srs .btn:hover:not(:disabled) { background: var(--surface); }#main-srs .btn:active:not(:disabled) { transform: translateY(1px); }#main-srs .btn:disabled { opacity: 0.4; cursor: not-allowed; }#main-srs .btn.primary { background: var(--primary); color: white; border-color: var(--primary); }#main-srs .btn.primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }#main-srs .btn.success { background: var(--success); color: white; border-color: var(--success); }#main-srs .btn.success:hover:not(:disabled) { background: var(--success-hover); border-color: var(--success-hover); }#main-srs .btn.danger { color: var(--danger); border-color: #fecaca; background: var(--bg); }#main-srs .btn.danger:hover:not(:disabled) { background: var(--danger-soft); }#main-srs .nav-grid {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }#main-srs .nav-grid .btn { flex: 1; font-size: 1.05em; padding: 14px; }#main-srs .settings {
+      margin-top: 28px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      box-shadow: var(--shadow-sm);
+    }#main-srs .settings details {
+      border-top: 1px solid var(--border);
+      padding: 14px 0;
+    }#main-srs .settings details:first-of-type { border-top: none; padding-top: 0; }#main-srs .settings details:last-of-type { padding-bottom: 0; }#main-srs .settings summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9em;
+      color: var(--fg);
+      list-style: none;
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }#main-srs .settings summary::-webkit-details-marker { display: none; }#main-srs .settings summary::after {
+      content: "▾";
+      color: var(--fg-subtle);
+      font-size: 0.9em;
+      transition: transform 0.15s;
+    }#main-srs .settings details[open] summary::after { transform: rotate(180deg); }#main-srs .settings .body {
+      padding-top: 12px;
+      font-size: 0.88em;
+      color: var(--fg-muted);
+    }#main-srs .settings label {
+      display: block;
+      margin-top: 12px;
+    }#main-srs .settings label:first-child { margin-top: 0; }#main-srs .settings input[type=number], #main-srs .settings select {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: 0.95em;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--bg);
+      color: var(--fg);
+      margin-top: 4px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }#main-srs .settings input[type=number]:focus, #main-srs .settings select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }#main-srs .settings input[type=range] {
+      width: 100%;
+      margin-top: 8px;
+      accent-color: var(--primary);
+    }#main-srs .settings .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }#main-srs .settings .row > label { flex: 1; min-width: 130px; margin-top: 0; }#main-srs .settings .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+      user-select: none;
+    }#main-srs .settings .check input { accent-color: var(--primary); }#main-srs .settings .check label { display: inline; margin: 0; cursor: pointer; }#main-srs .settings .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }#main-srs .settings .actions .btn { flex: 1; min-width: 140px; }#main-srs .settings .slider-val {
+      font-variant-numeric: tabular-nums;
+      color: var(--fg);
+      font-weight: 600;
+      margin-left: 4px;
+    }#main-srs .hint {
+      font-size: 0.72em;
+      color: var(--fg-subtle);
+      margin-top: 20px;
+      text-align: center;
+      line-height: 2;
+    }#main-srs .kb {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.9em;
+      background: var(--surface);
+      color: var(--fg-muted);
+      margin: 0 1px;
+    }#main-srs .progress-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+    }#main-srs .progress-hero .pct {
+      font-size: 2.6em;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }#main-srs .progress-hero .sub {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }#main-srs .progress-hero .bar-track {
+      height: 8px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 999px;
+      margin-top: 16px;
+      overflow: hidden;
+    }#main-srs .progress-hero .bar-fill {
+      height: 100%;
+      background: white;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }#main-srs .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }@media (min-width: 560px) {
+      .grid-2 { grid-template-columns: repeat(4, 1fr); }
+    }#main-srs .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 14px 12px;
+      box-shadow: var(--shadow-sm);
+    }#main-srs .stat-card .value {
+      font-size: 1.6em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }#main-srs .stat-card .label {
+      font-size: 0.7em;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }#main-srs .stat-card.grad .value { color: var(--success); }#main-srs .stat-card.learn .value { color: var(--primary); }#main-srs .stat-card.new .value { color: var(--warning); }#main-srs .panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }#main-srs .panel h3 {
+      margin: 0 0 4px;
+      font-size: 1em;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }#main-srs .panel .sub {
+      font-size: 0.82em;
+      color: var(--fg-muted);
+      margin-bottom: 16px;
+    }#main-srs .streak-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }#main-srs .streak-item {
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+    }#main-srs .streak-item.current { background: var(--warning-soft); border: 1px solid #fde68a; }#main-srs .streak-item .big {
+      font-size: 1.8em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }#main-srs .streak-item.current .big { color: #b45309; }#main-srs .streak-item .lbl {
+      font-size: 0.75em;
+      color: var(--fg-muted);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }#main-srs .chart-wrap {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }#main-srs .chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 120px;
+      min-width: 320px;
+    }#main-srs .chart .bar-slot {
+      flex: 1;
+      min-width: 8px;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+    }#main-srs .chart .bar {
+      width: 100%;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+      min-height: 3px;
+      transition: opacity 0.15s;
+    }#main-srs .chart .bar-slot.today .bar { background: var(--warning); }#main-srs .chart .bar-slot.empty .bar { background: var(--border); }#main-srs .chart .bar-slot:hover .bar { opacity: 0.75; }#main-srs .chart-labels {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+      min-width: 320px;
+      font-size: 0.65em;
+      color: var(--fg-subtle);
+    }#main-srs .chart-labels span {
+      flex: 1;
+      min-width: 8px;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }#main-srs .chart-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.72em;
+      color: var(--fg-muted);
+      margin-top: 10px;
+    }#main-srs .chart-legend .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }#main-srs .chart-legend .dot.primary { background: var(--primary); }#main-srs .chart-legend .dot.today { background: var(--warning); }#main-srs .estimate {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+    }#main-srs .estimate .icon { font-size: 1.8em; line-height: 1; }#main-srs .estimate .body { flex: 1; }#main-srs .estimate .line1 {
+      font-size: 1.05em;
+      font-weight: 600;
+      color: var(--fg);
+    }#main-srs .estimate .line2 {
+      font-size: 0.82em;
+      color: var(--fg-muted);
+      margin-top: 2px;
+    }@media (max-width: 480px) {
+      .fr { font-size: 1.25em; }#main-srs .card { min-height: 180px; padding: 24px 18px; }#main-srs .screen { padding: 32px 18px; }#main-srs .progress-hero { padding: 22px 18px; }#main-srs .progress-hero .pct { font-size: 2.2em; }#main-srs .stat-card .value { font-size: 1.4em; }#main-srs .settings { padding: 16px; }#main-srs .hint { display: none; }
+    }
+  }
+</style>
+<style>
+#main-news {
+  --bg: #0f172a; --panel: #1e293b; --panel-2: #334155;
+  --text: #e2e8f0; --muted: #94a3b8;
+  --accent: #60a5fa; --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+}#main-news { box-sizing: border-box; }#main-news {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(180deg, #0f172a, #1e293b 40%, #0f172a);
+  color: var(--text); min-height: 100vh; padding-bottom: 120px;
+}#main-news .topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 24px; border-bottom: 1px solid var(--panel-2);
+  background: rgba(15,23,42,.85); backdrop-filter: blur(6px);
+  position: sticky; top: 0; z-index: 10; flex-wrap: wrap; gap: 10px;
+}#main-news .brand { display: flex; align-items: center; gap: 10px; }#main-news .brand h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }#main-news .flag { font-size: 22px; }#main-news .progress { display: flex; gap: 4px; font-size: 12px; flex-wrap: wrap; }#main-news .progress span {
+  padding: 4px 8px; border-radius: 999px; color: var(--muted);
+  border: 1px solid transparent; transition: all .2s;
+}#main-news .progress span.done { color: var(--good); cursor: pointer; }#main-news .progress span.active { color: var(--accent); border-color: var(--accent); cursor: pointer; }#main-news .progress span.unlocked { cursor: pointer; }#main-news .progress span.unlocked:hover { border-color: var(--panel-2); background: rgba(255,255,255,.05); }#main-news .progress span.locked { opacity: .45; cursor: not-allowed; }#main-news button.small { padding: 5px 10px; font-size: 12px; }#main-news main { max-width: 860px; margin: 24px auto; padding: 0 16px; }#main-news .view.hidden, #main-news .card.hidden { display: none; }#main-news .card {
+  background: var(--panel); border: 1px solid var(--panel-2);
+  border-radius: 14px; padding: 22px; margin-bottom: 18px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}#main-news h2 { margin: 0 0 12px; font-size: 20px; }#main-news h3 { margin: 6px 0; font-size: 17px; }#main-news .muted { color: var(--muted); font-size: 13px; }#main-news .field { display: block; margin: 14px 0; }#main-news .field span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }#main-news .field input, #main-news .field select {
+  width: 100%; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--panel-2); background: #0b1220; color: var(--text);
+  font-size: 14px; font-family: inherit;
+}#main-news .field small { display: block; margin-top: 6px; font-size: 12px; }#main-news .field a { color: var(--accent); text-decoration: none; }#main-news button {
+  font: inherit; cursor: pointer; border-radius: 8px;
+  border: 1px solid var(--panel-2); background: var(--panel-2); color: var(--text);
+  padding: 9px 14px; transition: all .15s;
+}#main-news button:hover:not(:disabled) { filter: brightness(1.15); }#main-news button:disabled { opacity: .5; cursor: not-allowed; }#main-news button.primary { background: var(--accent); color: #0b1220; border-color: transparent; font-weight: 600; }#main-news button.ghost { background: transparent; }#main-news .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }#main-news .news-list { display: grid; gap: 10px; margin-top: 12px; }#main-news .news-item {
+  padding: 12px 14px; border-radius: 10px; cursor: pointer;
+  background: #0b1220; border: 1px solid var(--panel-2);
+  transition: border-color .15s, transform .1s;
+}#main-news .news-item:hover { border-color: var(--accent); transform: translateY(-1px); }#main-news .news-source { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }#main-news .news-title { font-weight: 600; margin: 4px 0; }#main-news .news-desc { font-size: 13px; color: var(--muted); }#main-news .article-preview {
+  background: #0b1220; padding: 14px; border-radius: 10px;
+  border: 1px solid var(--panel-2); margin-bottom: 14px;
+}#main-news .level-picker { display: flex; align-items: center; gap: 12px; margin: 14px 0; flex-wrap: wrap; }#main-news .levels { display: flex; gap: 6px; }#main-news .level-btn { padding: 6px 16px; border-radius: 999px; background: var(--panel-2); }#main-news .level-btn.active { background: var(--accent); color: #0b1220; font-weight: 700; }#main-news .french-text {
+  background: #0b1220; padding: 16px; border-radius: 10px; border: 1px solid var(--panel-2);
+  white-space: pre-wrap; line-height: 1.65; font-size: 15px;
+  font-family: Georgia, serif; max-height: 400px; overflow-y: auto;
+}#main-news .audio-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }#main-news .play-btn {
+  background: var(--accent); color: #0b1220; border: none; font-weight: 600;
+  padding: 10px 18px; border-radius: 999px;
+}#main-news .play-btn.big { font-size: 15px; padding: 12px 22px; }#main-news .play-btn.small { padding: 5px 12px; font-size: 13px; }#main-news .quiz { display: grid; gap: 18px; margin-top: 10px; }#main-news .quiz-q { background: #0b1220; padding: 16px; border-radius: 10px; border: 1px solid var(--panel-2); }#main-news .q-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }#main-news .q-num { color: var(--accent); font-weight: 700; }#main-news .q-text { flex: 1; font-weight: 500; }#main-news .speak-btn {
+  background: var(--panel-2); border: none; padding: 4px 10px;
+  border-radius: 6px; font-size: 14px;
+}#main-news .quiz-opts { display: grid; gap: 8px; }#main-news .opt {
+  text-align: left; padding: 10px 14px; border-radius: 8px;
+  background: #131c2e; border: 1px solid var(--panel-2);
+}#main-news .opt:hover:not(:disabled) { border-color: var(--accent); }#main-news .opt.sel { border-color: var(--accent); background: rgba(96,165,250,.12); }#main-news .opt.good { background: rgba(52,211,153,.15); border-color: var(--good); }#main-news .opt.bad { background: rgba(248,113,113,.15); border-color: var(--bad); }#main-news .score { font-weight: 700; color: var(--good); margin-left: 8px; }#main-news .writing-form { display: grid; gap: 18px; }#main-news .writing-q { background: #0b1220; padding: 16px; border-radius: 10px; border: 1px solid var(--panel-2); }#main-news .writing-q label { display: block; }#main-news .writing-q textarea {
+  width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--panel-2); background: #131c2e; color: var(--text);
+  font: inherit; resize: vertical; font-size: 14px;
+}#main-news .hint { display: block; color: var(--warn); font-size: 12px; margin-top: 6px; }#main-news .feedback {
+  margin-top: 12px; padding: 12px; border-radius: 8px;
+  background: #131c2e; border-left: 3px solid var(--accent); font-size: 13px;
+}#main-news .feedback.hidden { display: none; }#main-news .fb-score { font-weight: 700; color: var(--good); margin-bottom: 6px; }#main-news .fb-corrected, #main-news .fb-errors, #main-news .fb-comment { margin: 6px 0; }#main-news .fb-errors ul { margin: 4px 0; padding-left: 18px; }#main-news .loading {
+  padding: 14px; text-align: center; color: var(--accent);
+  background: rgba(96,165,250,.08); border-radius: 8px; margin: 12px 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}#main-news .loading.hidden { display: none; }@keyframes pulse { 0%,100% { opacity: .6; }#main-news 50% { opacity: 1; } }#main-news .player-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(15,23,42,.95); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--panel-2);
+  padding: 10px 24px; display: flex; align-items: center; gap: 16px; z-index: 20;
+}#main-news .player-label { font-size: 13px; color: var(--muted); white-space: nowrap; }#main-news .player-bar audio { flex: 1; height: 36px; }#main-news .hidden { display: none !important; }#main-news /* ---------------------------------------------------------- archive overlay */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 40px 16px; z-index: 50; overflow-y: auto;
+}#main-news .overlay.hidden { display: none; }#main-news .overlay-card {
+  background: var(--panel); border: 1px solid var(--panel-2); border-radius: 14px;
+  padding: 22px; max-width: 720px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}#main-news .overlay-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }#main-news .overlay-head h2 { margin: 0; }#main-news .archive-list { display: grid; gap: 10px; margin-top: 14px; }#main-news .archive-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: #0b1220; border: 1px solid var(--panel-2); border-radius: 10px;
+  padding: 12px 14px; flex-wrap: wrap;
+}#main-news .archive-item .meta { display: flex; flex-direction: column; gap: 2px; }#main-news .archive-item .archive-title { font-weight: 600; }#main-news .archive-item .archive-sub { font-size: 12px; color: var(--muted); }#main-news .archive-item .archive-actions { display: flex; gap: 8px; }#main-news .archive-empty { color: var(--muted); font-size: 13px; padding: 12px 0; }#main-news /* ---------------------------------------------------------- cheat sheet */
+.cheat-content { display: grid; gap: 18px; margin-top: 8px; }#main-news .cheat-section h3 { margin-bottom: 10px; }#main-news .cheat-vocab { display: grid; gap: 8px; }#main-news .cheat-vocab-item, #main-news .cheat-struct-item {
+  background: #0b1220; border: 1px solid var(--panel-2); border-radius: 8px;
+  padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}#main-news .cheat-word { font-weight: 600; }#main-news .cheat-meaning { color: var(--muted); font-size: 13px; }#main-news .cheat-struct-item { flex-direction: column; align-items: flex-start; }#main-news .cheat-struct-item .cheat-structure { font-weight: 600; }#main-news .cheat-struct-item .cheat-example { color: var(--muted); font-size: 13px; font-style: italic; margin-top: 4px; }#main-news .cheat-tips { padding-left: 18px; margin: 0; }#main-news .cheat-tips li { margin: 4px 0; }
+}
+#main-news { background: linear-gradient(180deg, #0f172a, #1e293b 40%, #0f172a); min-height:100vh; color:#e2e8f0; }
+#main-news .topbar { position:sticky; top:60px; z-index:90; }
+#main-news main { max-width:860px; margin:24px auto; padding:0 16px 120px; }
+</style>
+</head>
+<body>
+<header class="main-header">
+  <div class="main-brand">🇫🇷 French Lab</div>
+  <div id="cloudinary-badge" class="off">☁️ Cloudinary: checking…</div>
+  <nav class="main-tabs">
+    <button class="main-tab active" data-main="srs">SRS • Glossika</button>
+    <button class="main-tab" data-main="news">News Lab</button>
+  </nav>
+</header>
+
+<div id="main-srs">
+
+  <div class="container">
+
+    <header>
+      <div class="brand">Glossika GSR</div>
+      <nav class="tabs">
+        <button class="tab active" data-view="session">Session</button>
+        <button class="tab" data-view="progress">Progress</button>
+      </nav>
+      <div class="progress-indicator" id="progress-indicator">…</div>
+    </header>
+
+    <section id="view-session">
+      <div class="stats-mini">
+        <div class="stat-mini"><span class="num" id="mini-grad">0</span><span class="lbl">Graduated</span></div>
+        <div class="stat-mini"><span class="num" id="mini-learn">0</span><span class="lbl">Learning</span></div>
+        <div class="stat-mini"><span class="num" id="mini-new">0</span><span class="lbl">New</span></div>
+        <div class="stat-mini"><span class="num" id="mini-due">0</span><span class="lbl">Due</span></div>
+      </div>
+
+      <div id="screen-idle" class="screen" style="display:none;">
+        <h2 id="idle-title">Loading…</h2>
+        <p id="idle-sub"></p>
+        <button class="big-btn" id="start-session">▶ Start Session</button>
+      </div>
+
+      <div id="screen-done" class="screen" style="display:none;">
+        <h2>Session complete ✅</h2>
+        <p id="done-summary"></p>
+        <button class="big-btn" id="done-view">View Progress</button>
+      </div>
+
+      <div id="card" class="card" style="display:none;">
+        <div class="badge badge-role" id="role-badge" style="display:none;"></div>
+        <div class="badge badge-pass" id="pass-badge" style="display:none;"></div>
+        <div class="badge badge-state badge-new" id="badge">NEW</div>
+        <div class="en" id="en-text"></div>
+        <div class="fr" id="fr-text"></div>
+        <div class="prompt" id="prompt"></div>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div id="card-controls" class="btn-grid" style="display:none;">
+        <button class="btn primary" id="play">▶ Play</button>
+        <button class="btn" id="replay-pair">🔁 Replay</button>
+        <button class="btn" id="replay-fr">🔊 FR</button>
+        <button class="btn" id="replay-en">🔊 EN</button>
+        <button class="btn" id="toggle-text">👁 Show/Hide</button>
+      </div>
+
+      <div id="card-nav" class="nav-grid" style="display:none;">
+        <button class="btn" id="prev">←</button>
+        <button class="btn" id="skip">⏭ Skip</button>
+        <button class="btn success" id="next">→ Complete</button>
+      </div>
+    </section>
+
+    <section id="view-progress" style="display:none;">
+      <div class="progress-hero">
+        <div class="pct" id="pg-pct">0%</div>
+        <div class="sub" id="pg-sub">0 of 3000 sentences graduated</div>
+        <div class="bar-track"><div class="bar-fill" id="pg-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card grad">
+          <div class="value" id="pg-grad">0</div>
+          <div class="label">Graduated</div>
+        </div>
+        <div class="stat-card learn">
+          <div class="value" id="pg-learn">0</div>
+          <div class="label">Learning</div>
+        </div>
+        <div class="stat-card new">
+          <div class="value" id="pg-new">0</div>
+          <div class="label">Not started</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="pg-due">0</div>
+          <div class="label">Due today</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Streak</h3>
+        <div class="sub">Consecutive days with at least one completion.</div>
+        <div class="streak-row">
+          <div class="streak-item current">
+            <div class="big" id="pg-current-streak">0</div>
+            <div class="lbl">Current streak</div>
+          </div>
+          <div class="streak-item">
+            <div class="big" id="pg-longest-streak">0</div>
+            <div class="lbl">Longest streak</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Graduations per day</h3>
+        <div class="sub" id="pg-chart-sub">Last 30 days</div>
+        <div class="chart-wrap">
+          <div class="chart" id="pg-chart"></div>
+          <div class="chart-labels" id="pg-chart-labels"></div>
+        </div>
+        <div class="chart-legend">
+          <span><span class="dot primary"></span>Graduations</span>
+          <span><span class="dot today"></span>Today</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Estimated finish</h3>
+        <div class="sub">Based on your current "New per day" setting.</div>
+        <div class="estimate">
+          <div class="icon">📅</div>
+          <div class="body">
+            <div class="line1" id="pg-eta-line1">—</div>
+            <div class="line2" id="pg-eta-line2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Days active</h3>
+        <div class="sub">Total days on which you completed at least one sentence.</div>
+        <div class="estimate">
+          <div class="icon">🔥</div>
+          <div class="body">
+            <div class="line1" id="pg-days-active">0 days</div>
+            <div class="line2" id="pg-days-active-sub">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="settings">
+
+      <details open>
+        <summary>Session</summary>
+        <div class="body">
+          <div class="row">
+            <label>New per day
+              <input type="number" id="daily-new" min="0" max="100" value="10">
+            </label>
+            <label>Max reviews
+              <input type="number" id="daily-review" min="0" max="500" value="60">
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Chunked 2-pass</summary>
+        <div class="body">
+          <label>Chunk size
+            <input type="number" id="chunk-size" min="1" max="50" value="10">
+          </label>
+          <div class="check">
+            <input type="checkbox" id="shuffle-2nd" checked>
+            <label for="shuffle-2nd">Shuffle second pass</label>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Drill prompt (pass 2)</summary>
+        <div class="body">
+          <label>Drill mode
+            <select id="drill-mode">
+              <option value="off">Off — no drill prompt</option>
+              <option value="smart" selected>Smart — reviews only</option>
+              <option value="every">Every — all sentences</option>
+              <option value="new-only">New only</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Audio</summary>
+        <div class="body">
+          <label>French voice <select id="fr-voice"></select></label>
+          <label>English voice <select id="en-voice"></select></label>
+          <label>French rate: <span class="slider-val" id="fr-rate-val">0.9</span>
+            <input type="range" id="fr-rate" min="0.5" max="1.5" step="0.05" value="0.9">
+          </label>
+          <label>English rate: <span class="slider-val" id="en-rate-val">1.0</span>
+            <input type="range" id="en-rate" min="0.5" max="1.5" step="0.05" value="1.0">
+          </label>
+          <label>Pause between phrases (ms): <span class="slider-val" id="pause-val">500</span>
+            <input type="range" id="pause" min="0" max="2000" step="50" value="500">
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Danger zone</summary>
+        <div class="body">
+          <div class="actions">
+            <button class="btn danger" id="restart-session">Restart Today's Session</button>
+            <button class="btn danger" id="reset-all">Reset All Progress</button>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <div class="hint">
+      <span class="kb">Space</span> play &nbsp;·&nbsp;
+      <span class="kb">←</span> back &nbsp;·&nbsp;
+      <span class="kb">→</span> complete &nbsp;·&nbsp;
+      <span class="kb">S</span> skip &nbsp;·&nbsp;
+      <span class="kb">R</span> replay &nbsp;·&nbsp;
+      <span class="kb">F</span> FR &nbsp;·&nbsp;
+      <span class="kb">E</span> EN &nbsp;·&nbsp;
+      <span class="kb">H</span> hide
+    </div>
+
+  </div>
+
+
+</div>
+
+<div id="main-news" style="display:none;">
+
+
+<header class="topbar">
+  <div class="brand"><span class="flag">🇫🇷</span><h1>French News Lab</h1></div>
+  <nav class="progress" id="progress">
+    <span data-step="keys">1 · Keys</span>
+    <span data-step="news">2 · News</span>
+    <span data-step="lesson">3 · Lesson</span>
+    <span data-step="part1">4 · Listening</span>
+    <span data-step="part2">5 · Transcript</span>
+    <span data-step="writingA">6 · Writing A</span>
+    <span data-step="writingB">7 · Writing B</span>
+    <span data-step="dictation">8 · Dictation</span>
+    <span data-step="cheatsheet">9 · Cheat Sheet</span>
+  </nav>
+  <button class="ghost small" id="btnArchive">📂 Archive</button>
+</header>
+
+<!-- ARCHIVE OVERLAY -->
+<div class="overlay hidden" id="archiveOverlay">
+  <div class="overlay-card">
+    <div class="overlay-head">
+      <h2>📂 Archived lessons</h2>
+      <button class="ghost small" id="btnCloseArchive">✕ Close</button>
+    </div>
+    <p class="muted">Past news, generated questions, answers and audio are cached — resuming a lesson replays it without new API calls (only re-checking answers calls the API again).</p>
+    <div id="archiveList" class="archive-list"></div>
+  </div>
+</div>
+
+<main>
+  <!-- 1 · KEYS -->
+  <section class="view" id="view-keys">
+    <div class="card">
+      <h2>1 · API keys</h2>
+      <p class="muted">Keys live only in your browser's localStorage and are sent to this local Flask server to call the APIs.</p>
+
+      <label class="field">
+        <span>Gemini API key</span>
+        <input type="password" id="inpGemini" placeholder="AIza..." autocomplete="off">
+        <small><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a Gemini key →</a></small>
+      </label>
+
+      <label class="field">
+        <span>NewsAPI key</span>
+        <input type="password" id="inpNews" placeholder="your newsapi.org key" autocomplete="off">
+        <small><a href="https://newsapi.org/register" target="_blank" rel="noopener">Get a NewsAPI key →</a></small>
+      </label>
+
+      <label class="field">
+        <span>OpenRouter API key — optional fallback (Qwen, free tier)</span>
+        <input type="password" id="inpOpenRouter" placeholder="sk-or-..." autocomplete="off">
+        <small>Used only if Gemini fails or is out of quota. <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">Get an OpenRouter key →</a></small>
+      </label>
+
+      <label class="field">
+        <span>French voice</span>
+        <select id="inpVoice">
+          <option value="fr-FR-DeniseNeural">Denise (France, female)</option>
+          <option value="fr-FR-HenriNeural">Henri (France, male)</option>
+          <option value="fr-FR-EloiseNeural">Éloïse (France, young)</option>
+          <option value="fr-CA-SylvieNeural">Sylvie (Canada, female)</option>
+          <option value="fr-CA-JeanNeural">Jean (Canada, male)</option>
+        </select>
+      </label>
+
+      <button class="primary" id="btnSaveKeys">Save &amp; continue →</button>
+    </div>
+  </section>
+
+  <!-- 2 · NEWS -->
+  <section class="view hidden" id="view-news">
+    <div class="card">
+      <h2>2 · Today's French news</h2>
+      <div class="row">
+        <button class="primary" id="btnLoadNews">Load today's headlines</button>
+        <button class="ghost" id="btnBackKeys">← Keys</button>
+      </div>
+      <p class="muted" id="newsStatus"></p>
+      <div class="news-list" id="newsList"></div>
+    </div>
+  </section>
+
+  <!-- 3 · LESSON -->
+  <section class="view hidden" id="view-lesson">
+    <div class="card">
+      <h2>3 · Adapt the article</h2>
+      <div class="article-preview" id="chosenArticle"></div>
+      <div class="level-picker">
+        <span class="muted">Choose your level:</span>
+        <div class="levels" id="levelButtons">
+          <button data-level="A1" class="level-btn active">A1</button>
+          <button data-level="A2" class="level-btn">A2</button>
+          <button data-level="B1" class="level-btn">B1</button>
+          <button data-level="B2" class="level-btn">B2</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="primary" id="btnAdapt">✨ Adapt with Gemini</button>
+        <button class="ghost" id="btnBackNews">← News</button>
+      </div>
+      <p class="muted" id="adaptStatus"></p>
+    </div>
+
+    <div class="card hidden" id="adaptedCard">
+      <h2 id="adaptedTitle"></h2>
+      <div class="audio-row">
+        <button class="play-btn big" id="btnPlayAdapted">🔊 Play the article</button>
+        <span class="muted" id="adaptedMeta"></span>
+      </div>
+      <div class="french-text" id="adaptedText"></div>
+      <div class="row">
+        <button class="primary" id="btnToPart1">Continue to listening test →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · PART 1 -->
+  <section class="view hidden" id="view-part1">
+    <div class="card">
+      <h2>4 · Part 1 — Listening comprehension</h2>
+      <p class="muted">Listen to the article again. No transcript. Then answer the questions. Each question is read aloud — click 🔊 to hear it again.</p>
+      <div class="audio-row">
+        <button class="play-btn big" id="btnPlayP1">🔊 Play the article</button>
+      </div>
+      <div id="part1Loading" class="loading hidden">Generating questions with Gemini…</div>
+      <div class="quiz" id="part1Quiz"></div>
+      <div class="row">
+        <button class="primary" id="btnCheckP1">Check answers</button>
+        <span class="score" id="scoreP1"></span>
+        <button class="primary hidden" id="btnToPart2">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · PART 2 -->
+  <section class="view hidden" id="view-part2">
+    <div class="card">
+      <h2>5 · Part 2 — Listen with transcript</h2>
+      <p class="muted">Follow along with the transcript, then answer the second set of questions.</p>
+      <div class="audio-row">
+        <button class="play-btn big" id="btnPlayP2">🔊 Play the article</button>
+      </div>
+      <div class="french-text" id="part2Transcript"></div>
+      <div id="part2Loading" class="loading hidden">Generating questions with Gemini…</div>
+      <div class="quiz" id="part2Quiz"></div>
+      <div class="row">
+        <button class="primary" id="btnCheckP2">Check answers</button>
+        <span class="score" id="scoreP2"></span>
+        <button class="primary hidden" id="btnToWritingA">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · WRITING A -->
+  <section class="view hidden" id="view-writingA">
+    <div class="card">
+      <h2>6 · Writing — Section A</h2>
+      <p class="muted">Answer each question in a full French sentence. Gemini will correct your grammar, vocabulary and content.</p>
+      <div id="writingALoading" class="loading hidden">Generating questions with Gemini…</div>
+      <div id="writingAForm" class="writing-form"></div>
+      <div class="row">
+        <button class="primary" id="btnCheckWA">Check my writing</button>
+        <span class="score" id="scoreWA"></span>
+        <button class="primary hidden" id="btnToWritingB">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · WRITING B -->
+  <section class="view hidden" id="view-writingB">
+    <div class="card">
+      <h2>7 · Writing — Section B</h2>
+      <p class="muted">Write your own French sentence using each structure / vocabulary item from the article.</p>
+      <div id="writingBLoading" class="loading hidden">Extracting structures with Gemini…</div>
+      <div id="writingBForm" class="writing-form"></div>
+      <div class="row">
+        <button class="primary" id="btnCheckWB">Check my sentences</button>
+        <span class="score" id="scoreWB"></span>
+        <button class="primary hidden" id="btnToDictation">Continue →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · DICTATION -->
+  <section class="view hidden" id="view-dictation">
+    <div class="card">
+      <h2>8 · Dictation</h2>
+      <p class="muted">Listen to each sentence (as many times as you like) and write exactly what you hear. Accents count!</p>
+      <div id="dictLoading" class="loading hidden">Preparing dictation with Gemini…</div>
+      <div id="dictForm" class="writing-form"></div>
+      <div class="row">
+        <button class="primary" id="btnCheckDict">Check my dictation</button>
+        <span class="score" id="scoreDict"></span>
+        <button class="primary hidden" id="btnToCheatSheet">Continue to cheat sheet →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · CHEAT SHEET -->
+  <section class="view hidden" id="view-cheatsheet">
+    <div class="card">
+      <h2>9 · Cheat sheet — quick review</h2>
+      <p class="muted">A summary of the vocabulary and structures from this lesson, for a last quick review.</p>
+      <div id="cheatLoading" class="loading hidden">Building your cheat sheet…</div>
+      <div id="cheatContent" class="cheat-content"></div>
+      <div class="row">
+        <button class="ghost" id="btnRestart">🔄 Start over with another article</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="player-bar">
+  <span class="player-label" id="playerLabel">🔊 Ready</span>
+  <audio id="player" controls preload="none"></audio>
+</div>
+
+
+</div>
+
+<script src="/static/srs.js"></script>
+<script>
+
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'gsr_progress_v5';
+
+  var DRILL_PROMPTS = [
+    'Peux-tu transformer cette phrase?',
+    'Peux-tu dire la même chose autrement?',
+    'Comment dirais-tu ça autrement?'
+  ];
+
+  var synth = window.speechSynthesis;
+  var voices = [];
+  var deck = [];
+  var deckIndexById = {};
+  var textHidden = false;
+  var view = 'session';
+
+  var progress = {};
+  var daysActive = {};
+
+  var sessionDate = '';
+  var sessionQueue = [];
+  var sessionRoles = {};
+  var sessionCompleted = {};
+  var events = [];
+  var lastOccurrence = {};
+  var sessionPos = 0;
+
+  var el = function (id) { return document.getElementById(id); };
+  function today() { return SRS.todayStr(); }
+
+  function currentMode() {
+    var t = today();
+    if (sessionDate !== t) return 'idle';
+    if (!events.length) return 'idle';
+    if (sessionPos >= events.length) return 'done';
+    return 'active';
+  }
+
+  function daysBetween(a, b) {
+    var pa = a.split('-'), pb = b.split('-');
+    var da = new Date(Number(pa[0]), Number(pa[1]) - 1, Number(pa[2]));
+    var db = new Date(Number(pb[0]), Number(pb[1]) - 1, Number(pb[2]));
+    return Math.round((db - da) / 86400000);
+  }
+  function addDays(dateStr, n) { return SRS.addDays(dateStr, n); }
+  function relativeDue(dateStr, t) {
+    if (!dateStr) return '';
+    if (dateStr === t) return 'due today';
+    if (dateStr < t) return 'overdue ' + daysBetween(dateStr, t) + 'd';
+    var d = daysBetween(t, dateStr);
+    return d === 1 ? 'due tomorrow' : 'due in ' + d + 'd';
+  }
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var p = dateStr.split('-');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[Number(p[1]) - 1] + ' ' + Number(p[2]) + ', ' + p[0];
+  }
+
+  function shuffleInPlace(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function buildEvents(queue, chunkSize, shuffleSecond) {
+    var out = [];
+    var numChunks = Math.ceil(queue.length / chunkSize);
+    for (var c = 0; c < numChunks; c++) {
+      var chunk = queue.slice(c * chunkSize, (c + 1) * chunkSize);
+      for (var i = 0; i < chunk.length; i++) out.push({ id: chunk[i], pass: 1, chunkIdx: c });
+      var second = chunk.slice();
+      if (shuffleSecond) shuffleInPlace(second);
+      for (var j = 0; j < second.length; j++) out.push({ id: second[j], pass: 2, chunkIdx: c });
+    }
+    return out;
+  }
+  function computeLastOccurrence(evts) {
+    var last = {};
+    for (var i = 0; i < evts.length; i++) last[evts[i].id] = i;
+    return last;
+  }
+
+  function saveProgress() {
+    try {
+      var data = {
+        version: 5,
+        progress: progress,
+        daysActive: daysActive,
+        sessionDate: sessionDate,
+        sessionQueue: sessionQueue,
+        sessionRoles: sessionRoles,
+        sessionCompleted: sessionCompleted,
+        events: events,
+        sessionPos: sessionPos,
+        view: view,
+        settings: readSettingsFromUI()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { console.warn('save failed', e); }
+  }
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data.version !== 5) return;
+      progress = data.progress || {};
+      daysActive = data.daysActive || {};
+      sessionDate = data.sessionDate || '';
+      sessionQueue = data.sessionQueue || [];
+      sessionRoles = data.sessionRoles || {};
+      sessionCompleted = data.sessionCompleted || {};
+      events = data.events || [];
+      sessionPos = data.sessionPos || 0;
+      view = data.view || 'session';
+      if (sessionDate !== today()) clearSession();
+      else lastOccurrence = computeLastOccurrence(events);
+      if (data.settings) window.__pendingSettings = data.settings;
+    } catch (e) { console.warn('load failed', e); }
+  }
+  function clearSession() {
+    sessionDate = '';
+    sessionQueue = [];
+    sessionRoles = {};
+    sessionCompleted = {};
+    events = [];
+    lastOccurrence = {};
+    sessionPos = 0;
+  }
+  function readSettingsFromUI() {
+    return {
+      dailyNew:      el('daily-new').value,
+      dailyReview:   el('daily-review').value,
+      chunkSize:     el('chunk-size').value,
+      shuffle2nd:    el('shuffle-2nd').checked,
+      drillMode:     el('drill-mode').value,
+      frVoice:       el('fr-voice').value,
+      enVoice:       el('en-voice').value,
+      frRate:        el('fr-rate').value,
+      enRate:        el('en-rate').value,
+      pause:         el('pause').value,
+      textHidden:    textHidden
+    };
+  }
+  function applyPendingSettings() {
+    var s = window.__pendingSettings;
+    if (!s) return;
+    if (s.dailyNew)        el('daily-new').value = s.dailyNew;
+    if (s.dailyReview)     el('daily-review').value = s.dailyReview;
+    if (s.chunkSize)       el('chunk-size').value = s.chunkSize;
+    if (typeof s.shuffle2nd === 'boolean') el('shuffle-2nd').checked = s.shuffle2nd;
+    if (s.drillMode)       el('drill-mode').value = s.drillMode;
+    if (s.frRate) { el('fr-rate').value = s.frRate; el('fr-rate-val').textContent = s.frRate; }
+    if (s.enRate) { el('en-rate').value = s.enRate; el('en-rate-val').textContent = s.enRate; }
+    if (s.pause)  { el('pause').value = s.pause;  el('pause-val').textContent = s.pause; }
+    if (typeof s.textHidden === 'boolean') textHidden = s.textHidden;
+    if (s.frVoice) {
+      var fr = voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; });
+      for (var i = 0; i < fr.length; i++) if (fr[i].name === s.frVoice) { el('fr-voice').value = String(i); break; }
+    }
+    if (s.enVoice) {
+      var en = voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; });
+      for (var j = 0; j < en.length; j++) if (en[j].name === s.enVoice) { el('en-voice').value = String(j); break; }
+    }
+    window.__pendingSettings = null;
+    render();
+  }
+  function resetAll() {
+    if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    progress = {}; daysActive = {};
+    clearSession();
+    render();
+    updateStats();
+    saveProgress();
+  }
+  function restartSession() {
+    if (!confirm("Discard today's session and rebuild it from current SRS state?")) return;
+    clearSession();
+    render();
+    saveProgress();
+  }
+
+  function computeStats() {
+    var t = today();
+    var grad = 0, learn = 0, nw = 0, dueCount = 0;
+    for (var i = 0; i < deck.length; i++) {
+      var e = progress[deck[i].id];
+      if (!e || e.stage === 0) nw++;
+      else if (e.graduated) grad++;
+      else { learn++; if (e.nextDue && e.nextDue <= t) dueCount++; }
+    }
+    return { grad: grad, learn: learn, nw: nw, dueCount: dueCount, total: deck.length };
+  }
+
+  function updateStats() {
+    var s = computeStats();
+    el('mini-grad').textContent  = s.grad;
+    el('mini-learn').textContent = s.learn;
+    el('mini-new').textContent   = s.nw;
+    el('mini-due').textContent   = s.dueCount;
+    if (view === 'progress') renderProgress();
+  }
+
+  function computeGraduationsByDay() {
+    var map = {};
+    for (var id in progress) {
+      var e = progress[id];
+      if (e.graduated && e.graduatedOn) {
+        map[e.graduatedOn] = (map[e.graduatedOn] || 0) + 1;
+      }
+    }
+    return map;
+  }
+
+  function computeStreaks(daysActiveMap) {
+    var dates = Object.keys(daysActiveMap).sort();
+    if (!dates.length) return { current: 0, longest: 0 };
+    var longest = 1;
+    var run = 1;
+    for (var i = 1; i < dates.length; i++) {
+      var diff = daysBetween(dates[i - 1], dates[i]);
+      if (diff === 1) { run++; if (run > longest) longest = run; }
+      else run = 1;
+    }
+    var t = today();
+    var cursor = daysActiveMap[t] ? t : addDays(t, -1);
+    var current = 0;
+    while (daysActiveMap[cursor]) {
+      current++;
+      cursor = addDays(cursor, -1);
+    }
+    return { current: current, longest: longest };
+  }
+
+  function loadVoices() {
+    voices = synth.getVoices();
+    populateSelect('fr-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; }));
+    populateSelect('en-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; }));
+    applyPendingSettings();
+  }
+  function populateSelect(id, list) {
+    var sel = el(id);
+    if (!sel) {
+      console.warn('populateSelect: element #' + id + ' not found in DOM');
+      return;
+    }
+    var prev = sel.value;
+    sel.innerHTML = '';
+    if (!list.length) {
+      var o = document.createElement('option');
+      o.textContent = '(none found)';
+      sel.appendChild(o);
+      return;
+    }
+    list.forEach(function (v, i) {
+      var opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = v.name + ' — ' + v.lang;
+      sel.appendChild(opt);
+    });
+    if (prev && prev !== '' && parseInt(prev, 10) < list.length) sel.value = prev;
+    else sel.value = '0';
+  }
+  function getVoice(prefix) {
+    var sel = el(prefix + '-voice');
+    if (!sel) return null;
+    var idx = parseInt(sel.value, 10);
+    if (isNaN(idx)) return null;
+    var list = voices.filter(function (v) { return v.lang && v.lang.indexOf(prefix) === 0; });
+    return list[idx] || null;
+  }
+  if (typeof synth.onvoiceschanged !== 'undefined') synth.onvoiceschanged = loadVoices;
+  loadVoices();
+  setTimeout(loadVoices, 500);
+  setTimeout(loadVoices, 1500);
+
+  ['fr-rate', 'en-rate', 'pause'].forEach(function (id) {
+    el(id).addEventListener('input', function () {
+      el(id + '-val').textContent = this.value;
+      saveProgress();
+    });
+  });
+  ['fr-voice', 'en-voice', 'daily-new', 'daily-review', 'chunk-size', 'drill-mode', 'shuffle-2nd'].forEach(function (id) {
+    el(id).addEventListener('change', function () { saveProgress(); updateStats(); render(); });
+    el(id).addEventListener('input',  function () { saveProgress(); updateStats(); render(); });
+  });
+
+  loadProgress();
+  fetch('glossika_clean.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      deck = data;
+      for (var i = 0; i < deck.length; i++) deckIndexById[deck[i].id] = i;
+      render();
+      updateStats();
+      if (currentMode() === 'active' && view === 'session') playPair();
+    })
+    .catch(function (err) {
+      document.body.innerHTML = '<div class="container"><div class="screen"><h2>Failed to load data</h2><p>Serve via <code>python3 -m http.server 8000</code></p></div></div>';
+      console.error(err);
+    });
+
+  function computePlan() {
+    var t = today();
+    var allIds = deck.map(function (s) { return s.id; });
+    var settings = {
+      dailyNewLimit:    parseInt(el('daily-new').value, 10) || 0,
+      dailyReviewLimit: parseInt(el('daily-review').value, 10) || 0
+    };
+    return SRS.buildSession(progress, allIds, t, settings);
+  }
+  function startSession() {
+    var plan = computePlan();
+    if (plan.session.length === 0) { alert('Nothing to do today!'); return; }
+    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var shuffleSecond = !!el('shuffle-2nd').checked;
+    sessionDate = today();
+    sessionQueue = plan.session;
+    sessionRoles = {};
+    sessionCompleted = {};
+    plan.reviews.forEach(function (id) { sessionRoles[id] = 'review'; });
+    plan.news.forEach(function (id)    { sessionRoles[id] = 'new'; });
+    events = buildEvents(sessionQueue, chunkSize, shuffleSecond);
+    lastOccurrence = computeLastOccurrence(events);
+    sessionPos = 0;
+    saveProgress();
+    switchView('session');
+    render();
+    playPair();
+  }
+
+  function currentEvent() { return currentMode() === 'active' ? events[sessionPos] : null; }
+  function currentSentence() {
+    var ev = currentEvent();
+    if (!ev) return null;
+    var pos = deckIndexById[ev.id];
+    return pos === undefined ? null : deck[pos];
+  }
+  function drillApplies(ev) {
+    var mode = el('drill-mode').value;
+    if (mode === 'off') return false;
+    if (ev.pass !== 2) return false;
+    var role = sessionRoles[ev.id] || 'review';
+    if (mode === 'every')    return true;
+    if (mode === 'new-only') return role === 'new';
+    return role === 'review';
+  }
+  function pickPrompt(seed) { return DRILL_PROMPTS[Math.abs(seed) % DRILL_PROMPTS.length]; }
+
+  function switchView(v) {
+    view = v;
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i].dataset.view === v);
+    el('view-session').style.display  = v === 'session'  ? 'block' : 'none';
+    el('view-progress').style.display = v === 'progress' ? 'block' : 'none';
+    if (v === 'progress') renderProgress();
+    renderIndicator();
+    saveProgress();
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { switchView(t.dataset.view); });
+  });
+
+  function render() {
+    var mode = currentMode();
+
+    el('screen-idle').style.display = mode === 'idle' ? 'block' : 'none';
+    el('screen-done').style.display = mode === 'done' ? 'block' : 'none';
+    el('card').style.display = mode === 'active' ? 'flex' : 'none';
+    el('card-controls').style.display = mode === 'active' ? 'grid' : 'none';
+    el('card-nav').style.display = mode === 'active' ? 'flex' : 'none';
+
+    if (mode === 'idle') renderIdle();
+    if (mode === 'done') renderDone();
+    if (mode === 'active') renderCard();
+    renderIndicator();
+    updateStats();
+
+    if (view === 'progress') renderProgress();
+  }
+
+  function renderIndicator() {
+    var mode = currentMode();
+    if (mode === 'active') {
+      el('progress-indicator').textContent = (sessionPos + 1) + ' / ' + events.length;
+    } else if (mode === 'done') {
+      el('progress-indicator').textContent = 'done · ' + sessionQueue.length + ' sentences';
+    } else {
+      el('progress-indicator').textContent = '';
+    }
+  }
+
+  function renderIdle() {
+    var plan = computePlan();
+    var nNew = plan.news.length;
+    var nRev = plan.reviews.length;
+    var total = nNew + nRev;
+    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var shuffleOn = !!el('shuffle-2nd').checked;
+    var numChunks = total > 0 ? Math.ceil(total / chunkSize) : 0;
+    var totalEvents = total * 2;
+
+    if (total === 0) {
+      el('idle-title').textContent = 'Nothing due today';
+      el('idle-sub').textContent = 'No new or review sentences queued. Come back tomorrow, or change your daily limits below.';
+      el('start-session').disabled = true;
+      el('start-session').textContent = 'Nothing to do';
+    } else {
+      el('idle-title').textContent = "Today's Session";
+      el('idle-sub').innerHTML =
+        '<strong>' + nNew + '</strong> new + <strong>' + nRev + '</strong> reviews = <strong>' + total + '</strong> sentences<br>' +
+        '<div class="meta-line">' +
+          numChunks + ' chunks of ' + chunkSize +
+          ' · ' + (shuffleOn ? 'shuffled' : 'sequential') + ' 2nd pass' +
+          ' · ' + totalEvents + ' playback events' +
+        '</div>';
+      el('start-session').disabled = false;
+      el('start-session').textContent = '▶ Start Session';
+    }
+  }
+
+  function renderDone() {
+    var total = sessionQueue.length;
+    var completedCount = 0;
+    for (var k in sessionCompleted) if (sessionCompleted[k]) completedCount++;
+    el('done-summary').innerHTML =
+      'You completed <strong>' + completedCount + ' / ' + total + '</strong> sentences today. ' +
+      'Come back tomorrow for the next batch.';
+  }
+
+  function renderCard() {
+    var s = currentSentence();
+    var ev = currentEvent();
+    if (!s || !ev) return;
+
+    el('en-text').textContent = s.english;
+    el('fr-text').textContent = s.french.join('  /  ');
+
+    var promptEl = el('prompt');
+    if (drillApplies(ev)) {
+      promptEl.textContent = '💬 ' + pickPrompt(ev.id + ev.pass);
+      promptEl.classList.add('show');
+    } else {
+      promptEl.classList.remove('show');
+    }
+
+    var role = sessionRoles[s.id] || 'review';
+    el('role-badge').textContent = role === 'new' ? 'NEW' : 'REVIEW';
+    el('role-badge').style.display = 'inline-block';
+
+    el('pass-badge').textContent = 'PASS ' + ev.pass;
+    el('pass-badge').style.display = 'inline-block';
+
+    var badge = el('badge');
+    var e = progress[s.id];
+    if (!e || e.stage === 0) {
+      badge.textContent = 'NEW';
+      badge.className = 'badge badge-state badge-new';
+    } else if (e.graduated) {
+      badge.textContent = 'GRADUATED';
+      badge.className = 'badge badge-state badge-grad';
+    } else {
+      var t = today();
+      var cls = 'badge-future';
+      if (e.nextDue < t) cls = 'badge-overdue';
+      else if (e.nextDue === t) cls = 'badge-due';
+      badge.textContent = 'S' + e.stage + ' · ' + relativeDue(e.nextDue, t);
+      badge.className = 'badge badge-state ' + cls;
+    }
+
+    var numChunks = Math.ceil(sessionQueue.length / (parseInt(el('chunk-size').value, 10) || 10));
+    var variantNote = s.french.length > 1 ? ' · ' + s.french.length + ' variants' : '';
+    el('meta').textContent =
+      'id ' + s.id + variantNote +
+      ' · pass ' + ev.pass + '/2' +
+      ' · chunk ' + (ev.chunkIdx + 1) + '/' + numChunks;
+
+    if (textHidden) el('card').classList.add('hidden');
+    else el('card').classList.remove('hidden');
+  }
+
+  function renderProgress() {
+    if (!deck.length) return;
+    var stats = computeStats();
+    var pct = stats.total > 0 ? (stats.grad / stats.total) * 100 : 0;
+    el('pg-pct').textContent = pct.toFixed(1) + '%';
+    el('pg-sub').textContent  = stats.grad + ' of ' + stats.total + ' sentences graduated';
+    el('pg-fill').style.width = pct + '%';
+    el('pg-grad').textContent  = stats.grad;
+    el('pg-learn').textContent = stats.learn;
+    el('pg-new').textContent   = stats.nw;
+    el('pg-due').textContent   = stats.dueCount;
+
+    var streaks = computeStreaks(daysActive);
+    el('pg-current-streak').textContent = streaks.current;
+    el('pg-longest-streak').textContent = streaks.longest;
+
+    var totalDays = Object.keys(daysActive).length;
+    el('pg-days-active').textContent = totalDays + (totalDays === 1 ? ' day' : ' days');
+    el('pg-days-active-sub').textContent =
+      totalDays > 0
+        ? 'Started on ' + formatDate(Object.keys(daysActive).sort()[0])
+        : 'No activity yet.';
+
+    renderChart();
+    renderETA(stats);
+  }
+
+  function renderChart() {
+    var map = computeGraduationsByDay();
+    var container = el('pg-chart');
+    var labels = el('pg-chart-labels');
+    container.innerHTML = '';
+    labels.innerHTML = '';
+
+    var days = [];
+    var t = today();
+    for (var i = 29; i >= 0; i--) days.push(addDays(t, -i));
+
+    var maxCount = 0;
+    for (var j = 0; j < days.length; j++) {
+      var c = map[days[j]] || 0;
+      if (c > maxCount) maxCount = c;
+    }
+    if (maxCount === 0) maxCount = 1;
+
+    for (var k = 0; k < days.length; k++) {
+      var d = days[k];
+      var count = map[d] || 0;
+      var slot = document.createElement('div');
+      slot.className = 'bar-slot';
+      if (d === t) slot.classList.add('today');
+      if (count === 0) slot.classList.add('empty');
+
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var h = count === 0 ? 3 : Math.max(4, (count / maxCount) * 100);
+      bar.style.height = h + '%';
+      bar.title = formatDate(d) + ' — ' + count + ' graduated';
+      slot.appendChild(bar);
+      container.appendChild(slot);
+
+      var lbl = document.createElement('span');
+      if (k === 0 || k === days.length - 1 || k % 5 === 0) {
+        var parts = d.split('-');
+        lbl.textContent = parts[2] + '/' + parts[1];
+      } else {
+        lbl.textContent = '';
+      }
+      labels.appendChild(lbl);
+    }
+
+    el('pg-chart-sub').textContent = 'Last 30 days · max ' + maxCount + ' in a day';
+  }
+
+  function renderETA(stats) {
+    var dailyNew = parseInt(el('daily-new').value, 10) || 0;
+    if (dailyNew <= 0) {
+      el('pg-eta-line1').textContent = 'Set "New per day" > 0';
+      el('pg-eta-line2').textContent = 'Add new sentences daily to get an estimate.';
+      return;
+    }
+    var remaining = stats.total - stats.grad;
+    if (remaining <= 0) {
+      el('pg-eta-line1').textContent = '🎉 All sentences graduated!';
+      el('pg-eta-line2').textContent = 'You finished the deck.';
+      return;
+    }
+    var daysLeft = Math.ceil(remaining / dailyNew);
+    var eta = addDays(today(), daysLeft);
+    el('pg-eta-line1').textContent = 'Finish in about ' + daysLeft + ' days';
+    el('pg-eta-line2').textContent =
+      'Around ' + formatDate(eta) + ' at ' + dailyNew + ' new/day (reviews included).';
+  }
+
+  function speak(text, langPrefix, rate) {
+    return new Promise(function (resolve) {
+      var u = new SpeechSynthesisUtterance(text);
+      var v = getVoice(langPrefix);
+      if (v) u.voice = v;
+      u.lang = (v && v.lang) || (langPrefix === 'fr' ? 'fr-FR' : 'en-US');
+      u.rate = rate;
+      u.onend = function () { resolve(); };
+      u.onerror = function (e) { console.warn('TTS error', langPrefix, e.error); resolve(); };
+      synth.speak(u);
+    });
+  }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  var cancelled = false;
+  function stopAll() { cancelled = true; synth.cancel(); }
+  function playSequence(parts) {
+    stopAll();
+    cancelled = false;
+    var pauseMs = parseInt(el('pause').value, 10);
+    (async function () {
+      for (var i = 0; i < parts.length; i++) {
+        if (cancelled) return;
+        await speak(parts[i].text, parts[i].lang, parts[i].rate);
+        if (cancelled) return;
+        if (i < parts.length - 1) await wait(pauseMs);
+      }
+    })();
+  }
+  function pairParts() {
+    var s = currentSentence();
+    var ev = currentEvent();
+    if (!s || !ev) return null;
+    var parts = [
+      { lang: 'en', text: s.english,   rate: parseFloat(el('en-rate').value) },
+      { lang: 'fr', text: s.french[0], rate: parseFloat(el('fr-rate').value) }
+    ];
+    if (drillApplies(ev)) {
+      parts.push({ lang: 'fr', text: pickPrompt(ev.id + ev.pass), rate: parseFloat(el('fr-rate').value) });
+    }
+    return parts;
+  }
+  function playPair() { var parts = pairParts(); if (parts) playSequence(parts); }
+  function playFrenchOnly() {
+    var s = currentSentence(); if (!s) return;
+    playSequence([{ lang: 'fr', text: s.french[0], rate: parseFloat(el('fr-rate').value) }]);
+  }
+  function playEnglishOnly() {
+    var s = currentSentence(); if (!s) return;
+    playSequence([{ lang: 'en', text: s.english, rate: parseFloat(el('en-rate').value) }]);
+  }
+
+  function completeCurrent() {
+    var ev = currentEvent(); if (!ev) return;
+    var id = ev.id;
+    if (sessionCompleted[id]) return;
+    if (lastOccurrence[id] !== sessionPos) return;
+
+    var t = today();
+    var before = progress[id] || SRS.makeNewEntry(id, t);
+    var after = SRS.completeEntry(before, t);
+    if (!before.graduated && after.graduated) after.graduatedOn = t;
+    progress[id] = after;
+    sessionCompleted[id] = true;
+    daysActive[t] = true;
+
+    saveProgress();
+    updateStats();
+  }
+  function advance(delta) {
+    var n = sessionPos + delta;
+    if (n < 0) n = 0;
+    if (n >= events.length) {
+      sessionPos = events.length;
+      saveProgress();
+      render();
+      stopAll();
+      return;
+    }
+    stopAll();
+    sessionPos = n;
+    render();
+    saveProgress();
+    playPair();
+  }
+  function next() { completeCurrent(); render(); advance(+1); }
+  function prev() { advance(-1); }
+  function skip() { advance(+1); }
+
+  el('start-session').addEventListener('click', startSession);
+  el('play').addEventListener('click', function () {
+    if (synth.speaking) stopAll(); else playPair();
+  });
+  el('replay-pair').addEventListener('click', playPair);
+  el('replay-fr').addEventListener('click', playFrenchOnly);
+  el('replay-en').addEventListener('click', playEnglishOnly);
+  el('prev').addEventListener('click', prev);
+  el('skip').addEventListener('click', skip);
+  el('next').addEventListener('click', next);
+  el('toggle-text').addEventListener('click', function () {
+    textHidden = !textHidden; render(); saveProgress();
+  });
+  el('card').addEventListener('click', function () {
+    textHidden = !textHidden; render(); saveProgress();
+  });
+  el('restart-session').addEventListener('click', restartSession);
+  el('reset-all').addEventListener('click', resetAll);
+  el('done-view').addEventListener('click', function () { switchView('progress'); });
+
+  document.addEventListener('keydown', function (e) {
+    if (view !== 'session') return;
+    if (currentMode() !== 'active') return;
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+    switch (e.code) {
+      case 'Space':
+        e.preventDefault();
+        if (synth.speaking) stopAll(); else playPair();
+        break;
+      case 'ArrowRight': e.preventDefault(); next(); break;
+      case 'ArrowLeft':  e.preventDefault(); prev(); break;
+      case 'KeyS': skip(); break;
+      case 'KeyR': playPair(); break;
+      case 'KeyF': playFrenchOnly(); break;
+      case 'KeyE': playEnglishOnly(); break;
+      case 'KeyH':
+        textHidden = !textHidden;
+        render(); saveProgress();
+        break;
+    }
+  });
+
+  switchView(view);
+
+})();
+
+</script>
+<script>
+
+const RATE_BY_LEVEL = { A1: '-25%', A2: '-15%', B1: '-5%', B2: '+0%' };
+
+const state = {
+  geminiKey: '', newsKey: '', openrouterKey: '', voice: 'fr-FR-DeniseNeural',
+  sessionId: null, lastStep: 'keys', maxStepIndex: 0,
+  articles: [], chosen: null, level: 'A1', adapted: null,
+  part1Questions: [], part2Questions: [],
+  writingA: [], writingB: [], dictation: [], cheatsheet: null,
+  writingAAnswers: [], writingBAnswers: [], dictationAnswers: [],
+  writingAResults: [], writingBResults: [], dictationResults: [],
+};
+
+const $ = id => document.getElementById(id);
+const ORDER = ['keys','news','lesson','part1','part2','writingA','writingB','dictation','cheatsheet'];
+// Maps a step name to the loader that renders it (from cache when possible, else fetches).
+const STEP_GO = {
+  keys: () => showView('keys'),
+  news: () => showView('news'),
+  lesson: () => showView('lesson'),
+  part1: goPart1,
+  part2: goPart2,
+  writingA: goWritingA,
+  writingB: goWritingB,
+  dictation: goDictation,
+  cheatsheet: goCheatSheet,
+};
+
+function showView(name) {
+  ORDER.forEach(v => $('view-' + v).classList.toggle('hidden', v !== name));
+  state.lastStep = name;
+  state.maxStepIndex = Math.max(state.maxStepIndex, ORDER.indexOf(name));
+  setProgress(name);
+  window.scrollTo(0, 0);
+}
+
+function setProgress(step) {
+  const idx = ORDER.indexOf(step);
+  document.querySelectorAll('#progress span').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+    el.classList.toggle('done', i < idx);
+    el.classList.toggle('locked', i > state.maxStepIndex);
+    el.classList.toggle('unlocked', i <= state.maxStepIndex && i !== idx);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// ---------------------------------------------------------- audio
+
+let currentUrl = null;
+async function speak(text, rate) {
+  const player = document.getElementById('player');
+  const label = document.getElementById('playerLabel');
+  if (label) label.textContent = '🔊 Loading…';
+  try {
+    const r = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice: state.voice, rate: rate || '+0%' })
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      if (label) label.textContent = '🔇 TTS error';
+      console.error('TTS error:', t);
+      return;
+    }
+    let audioUrl = null;
+    const ct = r.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const j = await r.json();
+      audioUrl = j.url;
+      if (j.cloudinary) console.log('Cloudinary audio:', j.url);
+    } else {
+      const blob = await r.blob();
+      if (currentUrl) URL.revokeObjectURL(currentUrl);
+      currentUrl = URL.createObjectURL(blob);
+      audioUrl = currentUrl;
+    }
+    if (!audioUrl) throw new Error('No audio URL');
+    if (currentUrl && currentUrl.startsWith('blob:') && audioUrl.startsWith('http')) {
+      URL.revokeObjectURL(currentUrl);
+      currentUrl = null;
+    }
+    player.src = audioUrl;
+    if (label) label.textContent = '🔊 Playing';
+    player.onended = () => { if (label) label.textContent = '🔊 Done'; };
+    await player.play();
+  } catch (e) {
+    const label2 = document.getElementById('playerLabel');
+    if (label2) label2.textContent = '🔇 ' + e.message;
+    console.error(e);
+  }
+}
+
+
+async function playArticle() {
+  if (!state.adapted) return;
+  await speak(state.adapted.text, RATE_BY_LEVEL[state.level]);
+}
+
+// ---------------------------------------------------------- keys
+function saveKeys() {
+  const g = $('inpGemini').value.trim();
+  const n = $('inpNews').value.trim();
+  const x = $('inpOpenRouter').value.trim();
+  if (!n) { alert('Please enter your NewsAPI key.'); return; }
+  if (!g && !x) { alert('Please enter a Gemini key and/or an OpenRouter key.'); return; }
+  state.geminiKey = g;
+  state.newsKey = n;
+  state.openrouterKey = x;
+  state.voice = $('inpVoice').value;
+  localStorage.setItem('geminiKey', g);
+  localStorage.setItem('newsKey', n);
+  localStorage.setItem('openrouterKey', x);
+  localStorage.setItem('voice', state.voice);
+  showView('news');
+}
+
+// ---------------------------------------------------------- news
+async function loadNews() {
+  $('newsStatus').textContent = 'Loading…';
+  $('newsList').innerHTML = '';
+  try {
+    const r = await fetch('/api/news', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ news_key: state.newsKey })
+    });
+    const data = await r.json();
+    if (data.error) {
+      $('newsStatus').textContent = 'Error: ' + data.error +
+        (data.hint ? ' — ' + data.hint : '');
+      return;
+    }
+    state.articles = data.articles || [];
+    $('newsStatus').textContent = state.articles.length + ' articles found. Click one to choose.';
+    renderNewsList();
+  } catch (e) {
+    $('newsStatus').textContent = 'Error: ' + e.message;
+  }
+}
+
+function renderNewsList() {
+  const list = $('newsList');
+  list.innerHTML = '';
+  state.articles.forEach((a, i) => {
+    const el = document.createElement('div');
+    el.className = 'news-item';
+    el.innerHTML = '<div class="news-source">' + escapeHtml(a.source) + ' · ' +
+      escapeHtml(new Date(a.publishedAt).toLocaleString()) + '</div>' +
+      '<div class="news-title">' + escapeHtml(a.title) + '</div>' +
+      '<div class="news-desc">' + escapeHtml(a.description || '') + '</div>';
+    el.onclick = () => chooseArticle(i);
+    list.appendChild(el);
+  });
+}
+
+function chooseArticle(i) {
+  state.chosen = state.articles[i];
+  const a = state.chosen;
+  $('chosenArticle').innerHTML =
+    '<div class="news-source">' + escapeHtml(a.source) + '</div>' +
+    '<h3>' + escapeHtml(a.title) + '</h3>' +
+    '<p>' + escapeHtml(a.description || '') + '</p>' +
+    '<p class="muted">' + escapeHtml(a.content || '') + '</p>';
+  $('adaptedCard').classList.add('hidden');
+  $('adaptStatus').textContent = '';
+  // Starting fresh on a new article opens a new archive entry (old news gets archived too).
+  state.sessionId = null;
+  state.part1Questions = []; state.part2Questions = [];
+  state.writingA = []; state.writingB = []; state.dictation = []; state.cheatsheet = null;
+  state.writingAAnswers = []; state.writingBAnswers = []; state.dictationAnswers = [];
+  state.writingAResults = []; state.writingBResults = []; state.dictationResults = [];
+  showView('lesson');
+  saveSession();
+}
+
+// ---------------------------------------------------------- archive (sqlite-backed)
+function buildSnapshot() {
+  return {
+    chosen: state.chosen, level: state.level, adapted: state.adapted,
+    part1Questions: state.part1Questions, part2Questions: state.part2Questions,
+    writingA: state.writingA, writingB: state.writingB, dictation: state.dictation,
+    cheatsheet: state.cheatsheet,
+    writingAAnswers: state.writingAAnswers, writingBAnswers: state.writingBAnswers,
+    dictationAnswers: state.dictationAnswers,
+    writingAResults: state.writingAResults, writingBResults: state.writingBResults,
+    dictationResults: state.dictationResults,
+  };
+}
+
+function applySnapshot(snap) {
+  state.chosen = snap.chosen || null;
+  state.level = snap.level || 'A1';
+  state.adapted = snap.adapted || null;
+  state.part1Questions = snap.part1Questions || [];
+  state.part2Questions = snap.part2Questions || [];
+  state.writingA = snap.writingA || [];
+  state.writingB = snap.writingB || [];
+  state.dictation = snap.dictation || [];
+  state.cheatsheet = snap.cheatsheet || null;
+  state.writingAAnswers = snap.writingAAnswers || [];
+  state.writingBAnswers = snap.writingBAnswers || [];
+  state.dictationAnswers = snap.dictationAnswers || [];
+  state.writingAResults = snap.writingAResults || [];
+  state.writingBResults = snap.writingBResults || [];
+  state.dictationResults = snap.dictationResults || [];
+  $('levelButtons').querySelectorAll('.level-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.level === state.level);
+  });
+  if (state.chosen) {
+    const a = state.chosen;
+    $('chosenArticle').innerHTML =
+      '<div class="news-source">' + escapeHtml(a.source) + '</div>' +
+      '<h3>' + escapeHtml(a.title) + '</h3>' +
+      '<p>' + escapeHtml(a.description || '') + '</p>' +
+      '<p class="muted">' + escapeHtml(a.content || '') + '</p>';
+  }
+  if (state.adapted) {
+    $('adaptedTitle').textContent = state.adapted.title || '';
+    $('adaptedText').textContent = state.adapted.text || '';
+    const wc = (state.adapted.text || '').split(/\s+/).filter(Boolean).length;
+    $('adaptedMeta').textContent = 'Level ' + state.level + ' · ' + wc + ' words';
+    $('adaptedCard').classList.remove('hidden');
+  }
+}
+
+async function saveSession() {
+  if (!state.chosen) return; // nothing worth archiving yet
+  try {
+    const r = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: state.sessionId,
+        title: state.adapted?.title || state.chosen?.title || 'Untitled lesson',
+        source: state.chosen?.source || '',
+        level: state.level,
+        last_step: state.lastStep,
+        data: buildSnapshot(),
+      })
+    });
+    const data = await r.json();
+    if (data.id) state.sessionId = data.id;
+  } catch (e) { console.error('saveSession failed:', e); }
+}
+
+async function openArchive() {
+  $('archiveOverlay').classList.remove('hidden');
+  $('archiveList').innerHTML = '<p class="archive-empty">Loading…</p>';
+  try {
+    const r = await fetch('/api/sessions');
+    const data = await r.json();
+    renderArchiveList(data.sessions || []);
+  } catch (e) {
+    $('archiveList').innerHTML = '<p class="archive-empty">Error: ' + escapeHtml(e.message) + '</p>';
+  }
+}
+
+function closeArchive() { $('archiveOverlay').classList.add('hidden'); }
+
+const STEP_LABELS = {
+  keys: 'Keys', news: 'News', lesson: 'Lesson', part1: 'Listening', part2: 'Transcript',
+  writingA: 'Writing A', writingB: 'Writing B', dictation: 'Dictation', cheatsheet: 'Cheat sheet',
+};
+
+function renderArchiveList(sessions) {
+  const list = $('archiveList');
+  if (!sessions.length) {
+    list.innerHTML = '<p class="archive-empty">No archived lessons yet — finish a step and it will show up here.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  sessions.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'archive-item';
+    const when = new Date(s.updated_at).toLocaleString();
+    el.innerHTML =
+      '<div class="meta">' +
+      '<span class="archive-title">' + escapeHtml(s.title) + '</span>' +
+      '<span class="archive-sub">' + escapeHtml(s.source || '') + ' · Level ' + escapeHtml(s.level) +
+      ' · ' + escapeHtml(STEP_LABELS[s.last_step] || s.last_step) + ' · ' + when + '</span>' +
+      '</div>' +
+      '<div class="archive-actions">' +
+      '<button type="button" class="primary small resume-btn">Resume</button>' +
+      '<button type="button" class="ghost small delete-btn">Delete</button>' +
+      '</div>';
+    el.querySelector('.resume-btn').onclick = () => resumeSession(s.id);
+    el.querySelector('.delete-btn').onclick = () => deleteSession(s.id, el);
+    list.appendChild(el);
+  });
+}
+
+async function resumeSession(id) {
+  try {
+    const r = await fetch('/api/sessions/' + id);
+    const s = await r.json();
+    if (s.error) { alert(s.error); return; }
+    state.sessionId = s.id;
+    applySnapshot(s.data || {});
+    closeArchive();
+    const step = s.last_step && STEP_GO[s.last_step] ? s.last_step : 'lesson';
+    state.maxStepIndex = Math.max(state.maxStepIndex, ORDER.indexOf(step));
+    STEP_GO[step]();
+  } catch (e) { alert('Error resuming: ' + e.message); }
+}
+
+async function deleteSession(id, el) {
+  if (!confirm('Delete this archived lesson? This cannot be undone.')) return;
+  try {
+    await fetch('/api/sessions/' + id, { method: 'DELETE' });
+    el.remove();
+    if (id === state.sessionId) state.sessionId = null;
+  } catch (e) { alert('Error deleting: ' + e.message); }
+}
+
+// ---------------------------------------------------------- adapt
+async function adapt() {
+  if (!state.chosen) { alert('Pick an article first.'); return; }
+  $('adaptStatus').textContent = '✨ Adapting with Gemini…';
+  try {
+    const text = (state.chosen.content || '') + '\n\n' + (state.chosen.description || '');
+    const r = await fetch('/api/adapt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey,
+        level: state.level,
+        title: state.chosen.title,
+        text
+      })
+    });
+    const data = await r.json();
+    if (data.error) { $('adaptStatus').textContent = 'Error: ' + data.error; return; }
+    state.adapted = data;
+    $('adaptedTitle').textContent = data.title;
+    $('adaptedText').textContent = data.text;
+    const wc = data.text.split(/\s+/).filter(Boolean).length;
+    $('adaptedMeta').textContent = 'Level ' + state.level + ' · ' + wc + ' words';
+    $('adaptedCard').classList.remove('hidden');
+    $('adaptStatus').textContent = '✅ Done. Listen, then continue.';
+    saveSession();
+  } catch (e) {
+    $('adaptStatus').textContent = 'Error: ' + e.message;
+  }
+}
+
+// ---------------------------------------------------------- quiz render / check
+function renderQuiz(part) {
+  const qs = part === 'part1' ? state.part1Questions : state.part2Questions;
+  const container = $(part === 'part1' ? 'part1Quiz' : 'part2Quiz');
+  container.innerHTML = '';
+  qs.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'quiz-q';
+    const head = document.createElement('div');
+    head.className = 'q-head';
+    head.innerHTML = '<span class="q-num">' + (qi + 1) + '.</span>' +
+      '<span class="q-text">' + escapeHtml(q.question) + '</span>' +
+      '<button type="button" class="speak-btn" title="Play question">🔊</button>';
+    head.querySelector('.speak-btn').onclick = () =>
+      speak(q.question, RATE_BY_LEVEL[state.level]);
+    block.appendChild(head);
+    const opts = document.createElement('div');
+    opts.className = 'quiz-opts';
+    q.options.forEach((o, oi) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = o;
+      btn.onclick = () => {
+        opts.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+        btn.classList.add('sel');
+        q._selected = oi;
+      };
+      opts.appendChild(btn);
+    });
+    block.appendChild(opts);
+    container.appendChild(block);
+    // Restore a previous selection/grading when navigating back to this step.
+    if (q._checked) {
+      opts.querySelectorAll('.opt').forEach((btn, oi) => {
+        if (oi === q.answer_index) btn.classList.add('good');
+        else if (q._selected === oi) btn.classList.add('bad');
+        btn.disabled = true;
+      });
+    } else if (q._selected != null) {
+      opts.querySelectorAll('.opt')[q._selected]?.classList.add('sel');
+    }
+  });
+  if (qs.length && qs.every(q => q._checked)) {
+    const correct = qs.filter(q => q._selected === q.answer_index).length;
+    const pct = Math.round(100 * correct / qs.length);
+    $(part === 'part1' ? 'scoreP1' : 'scoreP2').textContent =
+      correct + '/' + qs.length + ' (' + pct + '%)';
+    if (part === 'part1') $('btnToPart2').classList.remove('hidden');
+    else $('btnToWritingA').classList.remove('hidden');
+  }
+}
+
+function checkQuiz(part) {
+  const qs = part === 'part1' ? state.part1Questions : state.part2Questions;
+  const container = $(part === 'part1' ? 'part1Quiz' : 'part2Quiz');
+  let correct = 0;
+  container.querySelectorAll('.quiz-q').forEach((block, qi) => {
+    const q = qs[qi];
+    block.querySelectorAll('.opt').forEach((btn, oi) => {
+      btn.classList.remove('good', 'bad');
+      if (oi === q.answer_index) btn.classList.add('good');
+      else if (q._selected === oi) btn.classList.add('bad');
+      btn.disabled = true;
+    });
+    q._checked = true;
+    if (q._selected === q.answer_index) correct++;
+  });
+  const pct = Math.round(100 * correct / qs.length);
+  $(part === 'part1' ? 'scoreP1' : 'scoreP2').textContent =
+    correct + '/' + qs.length + ' (' + pct + '%)';
+  saveSession();
+  if (part === 'part1') $('btnToPart2').classList.remove('hidden');
+  else $('btnToWritingA').classList.remove('hidden');
+}
+
+async function goPart1() {
+  showView('part1');
+  if (state.part1Questions.length) { renderQuiz('part1'); return; }
+  $('part1Loading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level,
+        text: state.adapted.text, variant: 'first'
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.part1Questions = data.questions || [];
+    renderQuiz('part1');
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('part1Loading').classList.add('hidden'); }
+}
+
+async function goPart2() {
+  showView('part2');
+  $('part2Transcript').textContent = state.adapted.text;
+  if (state.part2Questions.length) { renderQuiz('part2'); return; }
+  $('part2Loading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level,
+        text: state.adapted.text, variant: 'second'
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.part2Questions = data.questions || [];
+    renderQuiz('part2');
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('part2Loading').classList.add('hidden'); }
+}
+
+// ---------------------------------------------------------- writing A
+async function goWritingA() {
+  showView('writingA');
+  if (state.writingA.length) { renderWritingA(); return; }
+  $('writingALoading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/writing_a', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level, text: state.adapted.text
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.writingA = data.questions || [];
+    renderWritingA();
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('writingALoading').classList.add('hidden'); }
+}
+
+function renderWritingA() {
+  const form = $('writingAForm');
+  form.innerHTML = '';
+  state.writingA.forEach((q, i) => {
+    const block = document.createElement('div');
+    block.className = 'writing-q';
+    block.innerHTML =
+      '<div class="q-head"><span class="q-num">' + (i + 1) + '.</span>' +
+      '<span class="q-text">' + escapeHtml(q.question) + '</span>' +
+      '<button type="button" class="speak-btn">🔊</button></div>' +
+      (q.hint ? '<small class="hint">💡 ' + escapeHtml(q.hint) + '</small>' : '') +
+      '<textarea rows="3" placeholder="Écris ta réponse en français…"></textarea>' +
+      '<div class="feedback hidden"></div>';
+    block.querySelector('.speak-btn').onclick = () =>
+      speak(q.question, RATE_BY_LEVEL[state.level]);
+    const ta = block.querySelector('textarea');
+    ta.value = state.writingAAnswers[i] || '';
+    ta.oninput = () => { state.writingAAnswers[i] = ta.value; };
+    form.appendChild(block);
+  });
+  if (state.writingAResults.length === state.writingA.length && state.writingA.length) {
+    renderWritingFeedback('A', state.writingAResults);
+  }
+}
+
+async function checkWriting(part) {
+  const items = [];
+  const prompts = part === 'A' ? state.writingA : state.writingB;
+  const container = part === 'A' ? $('writingAForm') : $('writingBForm');
+  container.querySelectorAll('textarea').forEach((ta, i) => {
+    const p = prompts[i] || {};
+    items.push({
+      index: i,
+      prompt: part === 'A' ? p.question : ((p.structure || '') + ' — ' + (p.meaning || '')),
+      answer: ta.value.trim()
+    });
+  });
+  const btn = part === 'A' ? $('btnCheckWA') : $('btnCheckWB');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Checking…';
+  try {
+    const r = await fetch('/api/check_writing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level, items
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    if (part === 'A') {
+      state.writingAAnswers = items.map(it => it.answer);
+      state.writingAResults = data.results || [];
+    } else {
+      state.writingBAnswers = items.map(it => it.answer);
+      state.writingBResults = data.results || [];
+    }
+    renderWritingFeedback(part, data.results || []);
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+function renderWritingFeedback(part, results) {
+  const container = part === 'A' ? $('writingAForm') : $('writingBForm');
+  const blocks = container.querySelectorAll('.writing-q');
+  let total = 0, n = 0;
+  results.forEach(r => {
+    const b = blocks[r.index]; if (!b) return;
+    const fb = b.querySelector('.feedback');
+    fb.classList.remove('hidden');
+    const errs = (r.errors || []).map(e => '<li>' + escapeHtml(e) + '</li>').join('');
+    fb.innerHTML =
+      '<div class="fb-score">Score: ' + (r.score != null ? r.score : '?') + '/100</div>' +
+      '<div class="fb-corrected"><strong>Corrected:</strong> ' + escapeHtml(r.corrected) + '</div>' +
+      (errs ? '<div class="fb-errors"><strong>Errors:</strong><ul>' + errs + '</ul></div>' : '') +
+      '<div class="fb-comment">' + escapeHtml(r.feedback || '') + '</div>';
+    total += (r.score || 0);
+    n++;
+  });
+  const avg = n ? Math.round(total / n) : 0;
+  (part === 'A' ? $('scoreWA') : $('scoreWB')).textContent = 'Average: ' + avg + '%';
+  (part === 'A' ? $('btnToWritingB') : $('btnToDictation')).classList.remove('hidden');
+}
+
+// ---------------------------------------------------------- writing B
+async function goWritingB() {
+  showView('writingB');
+  if (state.writingB.length) { renderWritingB(); return; }
+  $('writingBLoading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/writing_b', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level, text: state.adapted.text
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.writingB = data.items || [];
+    renderWritingB();
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('writingBLoading').classList.add('hidden'); }
+}
+
+function renderWritingB() {
+  const form = $('writingBForm');
+  form.innerHTML = '';
+  state.writingB.forEach((it, i) => {
+    const block = document.createElement('div');
+    block.className = 'writing-q';
+    block.innerHTML =
+      '<div class="q-head"><span class="q-num">' + (i + 1) + '.</span>' +
+      '<span class="q-text">' + escapeHtml(it.structure) + '</span>' +
+      '<button type="button" class="speak-btn">🔊</button></div>' +
+      '<small class="hint">Meaning: ' + escapeHtml(it.meaning) +
+      ' — Example: <em>' + escapeHtml(it.example) + '</em></small>' +
+      '<textarea rows="2" placeholder="Écris ta propre phrase…"></textarea>' +
+      '<div class="feedback hidden"></div>';
+    block.querySelector('.speak-btn').onclick = () =>
+      speak(it.structure, RATE_BY_LEVEL[state.level]);
+    const ta = block.querySelector('textarea');
+    ta.value = state.writingBAnswers[i] || '';
+    ta.oninput = () => { state.writingBAnswers[i] = ta.value; };
+    form.appendChild(block);
+  });
+  if (state.writingBResults.length === state.writingB.length && state.writingB.length) {
+    renderWritingFeedback('B', state.writingBResults);
+  }
+}
+
+// ---------------------------------------------------------- dictation
+async function goDictation() {
+  showView('dictation');
+  if (state.dictation.length) { renderDictation(); return; }
+  $('dictLoading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/dictation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level, text: state.adapted.text
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.dictation = data.sentences || [];
+    renderDictation();
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('dictLoading').classList.add('hidden'); }
+}
+
+function renderDictation() {
+  const form = $('dictForm');
+  form.innerHTML = '';
+  state.dictation.forEach((s, i) => {
+    const block = document.createElement('div');
+    block.className = 'writing-q';
+    block.innerHTML =
+      '<div class="q-head"><span class="q-num">' + (i + 1) + '.</span>' +
+      '<button type="button" class="play-btn small normal">🔊 Play</button> ' +
+      '<button type="button" class="play-btn small slow">🐢 Slow</button></div>' +
+      '<textarea rows="2" placeholder="Écris ce que tu entends…"></textarea>' +
+      '<div class="feedback hidden"></div>';
+    block.querySelector('.normal').onclick = () =>
+      speak(s, RATE_BY_LEVEL[state.level]);
+    block.querySelector('.slow').onclick = () => speak(s, '-40%');
+    const ta = block.querySelector('textarea');
+    ta.value = state.dictationAnswers[i] || '';
+    ta.oninput = () => { state.dictationAnswers[i] = ta.value; };
+    form.appendChild(block);
+  });
+  if (state.dictationResults.length === state.dictation.length && state.dictation.length) {
+    renderDictationFeedback(state.dictationResults);
+  }
+}
+
+async function checkDict() {
+  const form = $('dictForm');
+  const items = [];
+  form.querySelectorAll('textarea').forEach((ta, i) => {
+    items.push({ index: i, expected: state.dictation[i], answer: ta.value.trim() });
+  });
+  $('btnCheckDict').disabled = true;
+  $('btnCheckDict').textContent = 'Checking…';
+  try {
+    const r = await fetch('/api/check_dictation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level, items
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.dictationAnswers = items.map(it => it.answer);
+    state.dictationResults = data.results || [];
+    renderDictationFeedback(state.dictationResults);
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally {
+    $('btnCheckDict').disabled = false;
+    $('btnCheckDict').textContent = 'Check my dictation';
+  }
+}
+
+function renderDictationFeedback(results) {
+  const blocks = $('dictForm').querySelectorAll('.writing-q');
+  let total = 0, n = 0;
+  results.forEach(res => {
+    const b = blocks[res.index]; if (!b) return;
+    const fb = b.querySelector('.feedback');
+    fb.classList.remove('hidden');
+    fb.innerHTML =
+      '<div class="fb-score">Score: ' + res.score + '/100</div>' +
+      '<div class="fb-corrected"><strong>Expected:</strong> ' +
+      escapeHtml(res.corrected) + '</div>' +
+      '<div class="fb-comment">' + escapeHtml(res.feedback || '') + '</div>';
+    total += res.score || 0;
+    n++;
+  });
+  const avg = n ? Math.round(total / n) : 0;
+  $('scoreDict').textContent = 'Average: ' + avg + '%';
+  $('btnToCheatSheet').classList.remove('hidden');
+}
+
+// ---------------------------------------------------------- cheat sheet
+async function goCheatSheet() {
+  showView('cheatsheet');
+  if (state.cheatsheet) { renderCheatSheet(); return; }
+  $('cheatLoading').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/cheatsheet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gemini_key: state.geminiKey, openrouter_key: state.openrouterKey, level: state.level,
+        text: state.adapted.text, structures: state.writingB, sentences: state.dictation
+      })
+    });
+    const data = await r.json();
+    if (data.error) { alert(data.error); return; }
+    state.cheatsheet = data;
+    renderCheatSheet();
+    saveSession();
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { $('cheatLoading').classList.add('hidden'); }
+}
+
+function renderCheatSheet() {
+  const c = state.cheatsheet || {};
+  const vocab = (c.vocab || []).map(v =>
+    '<div class="cheat-vocab-item">' +
+    '<span class="cheat-word">' + escapeHtml(v.word) + '</span>' +
+    '<span class="cheat-meaning">' + escapeHtml(v.meaning) + '</span>' +
+    '<button type="button" class="speak-btn" data-w="' + escapeHtml(v.word) + '">🔊</button>' +
+    '</div>'
+  ).join('');
+  const structs = (c.structures || []).map(s =>
+    '<div class="cheat-struct-item">' +
+    '<span class="cheat-structure">' + escapeHtml(s.structure) + '</span>' +
+    '<span class="cheat-example">' + escapeHtml(s.example) + '</span>' +
+    '</div>'
+  ).join('');
+  const tips = (c.tips || []).map(t => '<li>' + escapeHtml(t) + '</li>').join('');
+  $('cheatContent').innerHTML =
+    '<div class="cheat-section"><h3>📚 Key vocabulary</h3><div class="cheat-vocab">' + vocab + '</div></div>' +
+    '<div class="cheat-section"><h3>🧩 Structures to remember</h3>' + structs + '</div>' +
+    (tips ? '<div class="cheat-section"><h3>💡 Quick tips</h3><ul class="cheat-tips">' + tips + '</ul></div>' : '');
+  $('cheatContent').querySelectorAll('.speak-btn[data-w]').forEach(btn => {
+    btn.onclick = () => speak(btn.dataset.w, RATE_BY_LEVEL[state.level]);
+  });
+}
+
+// ---------------------------------------------------------- init
+window.addEventListener('DOMContentLoaded', () => {
+  $('inpGemini').value = localStorage.getItem('geminiKey') || '';
+  $('inpNews').value = localStorage.getItem('newsKey') || '';
+  $('inpOpenRouter').value = localStorage.getItem('openrouterKey') || '';
+  const v = localStorage.getItem('voice');
+  if (v) $('inpVoice').value = v;
+  state.voice = $('inpVoice').value;
+  state.openrouterKey = $('inpOpenRouter').value;
+
+  $('btnSaveKeys').onclick = saveKeys;
+  $('btnLoadNews').onclick = loadNews;
+  $('btnBackKeys').onclick = () => showView('keys');
+  $('btnBackNews').onclick = () => showView('news');
+  $('btnAdapt').onclick = adapt;
+  $('btnToPart1').onclick = goPart1;
+  $('btnCheckP1').onclick = () => checkQuiz('part1');
+  $('btnToPart2').onclick = goPart2;
+  $('btnCheckP2').onclick = () => checkQuiz('part2');
+  $('btnToWritingA').onclick = goWritingA;
+  $('btnCheckWA').onclick = () => checkWriting('A');
+  $('btnToWritingB').onclick = goWritingB;
+  $('btnCheckWB').onclick = () => checkWriting('B');
+  $('btnToDictation').onclick = goDictation;
+  $('btnCheckDict').onclick = checkDict;
+  $('btnToCheatSheet').onclick = goCheatSheet;
+  $('btnRestart').onclick = () => location.reload();
+
+  $('btnArchive').onclick = openArchive;
+  $('btnCloseArchive').onclick = closeArchive;
+  $('archiveOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'archiveOverlay') closeArchive();
+  });
+
+  $('btnPlayAdapted').onclick = playArticle;
+  $('btnPlayP1').onclick = playArticle;
+  $('btnPlayP2').onclick = playArticle;
+
+  $('levelButtons').querySelectorAll('.level-btn').forEach(b => {
+    b.onclick = () => {
+      $('levelButtons').querySelectorAll('.level-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      state.level = b.dataset.level;
+    };
+  });
+
+  // Progress chips: clicking an already-unlocked step jumps back/forward to it
+  // without re-triggering generation (goX() functions reuse cached state).
+  document.querySelectorAll('#progress span').forEach((el, i) => {
+    el.onclick = () => {
+      if (i > state.maxStepIndex) return; // locked — not reached yet
+      const step = el.dataset.step;
+      const fn = STEP_GO[step];
+      if (fn) fn();
+    };
+  });
+
+  showView('keys');
+});
+
+</script>
+<script>
+(function() {
+  const tabs = document.querySelectorAll('.main-tab');
+  const srs = document.getElementById('main-srs');
+  const news = document.getElementById('main-news');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const which = t.dataset.main;
+      if (which === 'srs') {
+        srs.style.display = 'block';
+        news.style.display = 'none';
+      } else {
+        srs.style.display = 'none';
+        news.style.display = 'block';
+      }
+      localStorage.setItem('french_lab_main_tab', which);
+      window.scrollTo(0,0);
+    });
+  });
+  const saved = localStorage.getItem('french_lab_main_tab');
+  if (saved === 'news') document.querySelector('[data-main="news"]').click();
+  fetch('/api/cloudinary/status').then(r=>r.json()).then(j=>{
+    const badge = document.getElementById('cloudinary-badge');
+    if (j.enabled) {
+      badge.textContent = '☁️ Cloudinary: ON ('+j.folder+')';
+      badge.className = '';
+    } else {
+      badge.textContent = '☁️ Cloudinary: OFF (local)';
+      badge.className = 'off';
+    }
+  }).catch(()=>{});
+})();
+</script>
+</body>
+</html>
