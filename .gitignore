@@ -2,4 +2,5 @@
 archive.db
 audio_cache
 old
+venv
 .venv
