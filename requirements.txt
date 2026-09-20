@@ -1,4 +1,5 @@
 flask
+gunicorn
 edge_tts
 python-dotenv
 cloudinary
