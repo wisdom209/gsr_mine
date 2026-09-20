@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glossika GSR</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #18181b;
+      --fg-muted: #71717a;
+      --fg-subtle: #a1a1aa;
+      --border: #e4e4e7;
+      --surface: #fafafa;
+      --surface-2: #f4f4f5;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --success: #16a34a;
+      --success-hover: #15803d;
+      --success-soft: #f0fdf4;
+      --warning: #f59e0b;
+      --warning-soft: #fffbeb;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --purple: #7c3aed;
+      --purple-soft: #f5f3ff;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
+      --shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md: 0 6px 20px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { min-height: 100vh; }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+    @media (min-width: 768px) {
+      .container { padding: 24px 24px 60px; }
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.05em;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      padding: 4px;
+      margin-left: auto;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      font-size: 0.85em;
+      font-weight: 500;
+      color: var(--fg-muted);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab:hover:not(.active) { color: var(--fg); }
+    .tab.active {
+      background: var(--bg);
+      color: var(--fg);
+      box-shadow: var(--shadow-sm);
+    }
+    .progress-indicator {
+      font-size: 0.8em;
+      color: var(--fg-muted);
+      font-variant-numeric: tabular-nums;
+      margin-left: auto;
+      order: 3;
+      flex-basis: 100%;
+      text-align: right;
+      margin-top: 4px;
+    }
+    @media (min-width: 600px) {
+      .progress-indicator {
+        order: 0;
+        flex-basis: auto;
+        margin-left: 0;
+        margin-top: 0;
+        margin-right: 12px;
+      }
+    }
+
+    .stats-mini {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .stat-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      text-align: center;
+      min-width: 0;
+    }
+    .stat-mini .num {
+      display: block;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+    .stat-mini .lbl {
+      display: block;
+      font-size: 0.65em;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .screen {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .screen h2 {
+      margin: 0 0 10px;
+      font-size: 1.35em;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+    .screen p {
+      margin: 0 0 24px;
+      color: var(--fg-muted);
+      line-height: 1.55;
+      font-size: 0.95em;
+    }
+    .screen .big-btn {
+      padding: 16px 34px;
+      font-size: 1em;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+      box-shadow: var(--shadow-sm);
+    }
+    .screen .big-btn:hover:not(:disabled) { background: var(--primary-hover); }
+    .screen .big-btn:active:not(:disabled) { transform: translateY(1px); }
+    .screen .big-btn:disabled {
+      background: var(--border);
+      color: var(--fg-subtle);
+      cursor: not-allowed;
+    }
+    .screen .meta-line {
+      font-size: 0.85em;
+      color: var(--fg-subtle);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px 28px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s;
+    }
+    .card:hover { box-shadow: var(--shadow); }
+    .card.hidden .en, .card.hidden .fr { visibility: hidden; }
+
+    .badge {
+      position: absolute;
+      top: 14px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.65em;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-new      { background: #e4e4e7; color: #52525b; }
+    .badge-future   { background: var(--primary-soft); color: #1e40af; }
+    .badge-due      { background: #fed7aa; color: #9a3412; }
+    .badge-overdue  { background: #fecaca; color: #991b1b; }
+    .badge-grad     { background: #bbf7d0; color: #166534; }
+    .badge-role {
+      left: 14px;
+      background: var(--warning-soft);
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .badge-pass {
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--purple-soft);
+      color: var(--purple);
+      border: 1px solid #ddd6fe;
+    }
+    .badge-state { right: 14px; }
+
+    .en {
+      font-size: 1em;
+      color: #52525b;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .fr {
+      font-size: 1.45em;
+      font-weight: 600;
+      color: var(--fg);
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+    .prompt {
+      margin-top: 18px;
+      font-size: 0.88em;
+      color: var(--purple);
+      padding: 10px 14px;
+      background: var(--purple-soft);
+      border-radius: var(--radius-xs);
+      border-left: 3px solid var(--purple);
+      display: none;
+      line-height: 1.45;
+    }
+    .prompt.show { display: block; }
+    .meta {
+      font-size: 0.72em;
+      color: var(--fg-subtle);
+      margin-top: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    button { font-family: inherit; }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 8px;
+    }
+    .btn {
+      padding: 13px 12px;
+      font-size: 0.9em;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.05s;
+      touch-action: manipulation;
+    }
+    .btn:hover:not(:disabled) { background: var(--surface); }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn.primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .btn.success { background: var(--success); color: white; border-color: var(--success); }
+    .btn.success:hover:not(:disabled) { background: var(--success-hover); border-color: var(--success-hover); }
+    .btn.danger { color: var(--danger); border-color: #fecaca; background: var(--bg); }
+    .btn.danger:hover:not(:disabled) { background: var(--danger-soft); }
+
+    .nav-grid {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .nav-grid .btn { flex: 1; font-size: 1.05em; padding: 14px; }
+
+    .settings {
+      margin-top: 28px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      box-shadow: var(--shadow-sm);
+    }
+    .settings details {
+      border-top: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .settings details:first-of-type { border-top: none; padding-top: 0; }
+    .settings details:last-of-type { padding-bottom: 0; }
+    .settings summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9em;
+      color: var(--fg);
+      list-style: none;
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .settings summary::-webkit-details-marker { display: none; }
+    .settings summary::after {
+      content: "▾";
+      color: var(--fg-subtle);
+      font-size: 0.9em;
+      transition: transform 0.15s;
+    }
+    .settings details[open] summary::after { transform: rotate(180deg); }
+    .settings .body {
+      padding-top: 12px;
+      font-size: 0.88em;
+      color: var(--fg-muted);
+    }
+    .settings label {
+      display: block;
+      margin-top: 12px;
+    }
+    .settings label:first-child { margin-top: 0; }
+    .settings input[type=number],
+    .settings select {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: 0.95em;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--bg);
+      color: var(--fg);
+      margin-top: 4px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .settings input[type=number]:focus,
+    .settings select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    .settings input[type=range] {
+      width: 100%;
+      margin-top: 8px;
+      accent-color: var(--primary);
+    }
+    .settings .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .settings .row > label { flex: 1; min-width: 130px; margin-top: 0; }
+    .settings .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .settings .check input { accent-color: var(--primary); }
+    .settings .check label { display: inline; margin: 0; cursor: pointer; }
+    .settings .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+    .settings .actions .btn { flex: 1; min-width: 140px; }
+    .settings .slider-val {
+      font-variant-numeric: tabular-nums;
+      color: var(--fg);
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    .hint {
+      font-size: 0.72em;
+      color: var(--fg-subtle);
+      margin-top: 20px;
+      text-align: center;
+      line-height: 2;
+    }
+    .kb {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.9em;
+      background: var(--surface);
+      color: var(--fg-muted);
+      margin: 0 1px;
+    }
+
+    .progress-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+    }
+    .progress-hero .pct {
+      font-size: 2.6em;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .progress-hero .sub {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    .progress-hero .bar-track {
+      height: 8px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 999px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    .progress-hero .bar-fill {
+      height: 100%;
+      background: white;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 560px) {
+      .grid-2 { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 14px 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card .value {
+      font-size: 1.6em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-card .label {
+      font-size: 0.7em;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+    .stat-card.grad .value { color: var(--success); }
+    .stat-card.learn .value { color: var(--primary); }
+    .stat-card.new .value { color: var(--warning); }
+
+    .panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel h3 {
+      margin: 0 0 4px;
+      font-size: 1em;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .panel .sub {
+      font-size: 0.82em;
+      color: var(--fg-muted);
+      margin-bottom: 16px;
+    }
+
+    .streak-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .streak-item {
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+    }
+    .streak-item.current { background: var(--warning-soft); border: 1px solid #fde68a; }
+    .streak-item .big {
+      font-size: 1.8em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+    .streak-item.current .big { color: #b45309; }
+    .streak-item .lbl {
+      font-size: 0.75em;
+      color: var(--fg-muted);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .chart-wrap {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 120px;
+      min-width: 320px;
+    }
+    .chart .bar-slot {
+      flex: 1;
+      min-width: 8px;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+    }
+    .chart .bar {
+      width: 100%;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+      min-height: 3px;
+      transition: opacity 0.15s;
+    }
+    .chart .bar-slot.today .bar { background: var(--warning); }
+    .chart .bar-slot.empty .bar { background: var(--border); }
+    .chart .bar-slot:hover .bar { opacity: 0.75; }
+    .chart-labels {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+      min-width: 320px;
+      font-size: 0.65em;
+      color: var(--fg-subtle);
+    }
+    .chart-labels span {
+      flex: 1;
+      min-width: 8px;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.72em;
+      color: var(--fg-muted);
+      margin-top: 10px;
+    }
+    .chart-legend .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .chart-legend .dot.primary { background: var(--primary); }
+    .chart-legend .dot.today { background: var(--warning); }
+
+    .estimate {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+    }
+    .estimate .icon { font-size: 1.8em; line-height: 1; }
+    .estimate .body { flex: 1; }
+    .estimate .line1 {
+      font-size: 1.05em;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .estimate .line2 {
+      font-size: 0.82em;
+      color: var(--fg-muted);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 480px) {
+      .fr { font-size: 1.25em; }
+      .card { min-height: 180px; padding: 24px 18px; }
+      .screen { padding: 32px 18px; }
+      .progress-hero { padding: 22px 18px; }
+      .progress-hero .pct { font-size: 2.2em; }
+      .stat-card .value { font-size: 1.4em; }
+      .settings { padding: 16px; }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="brand">Glossika GSR</div>
+      <nav class="tabs">
+        <button class="tab active" data-view="session">Session</button>
+        <button class="tab" data-view="progress">Progress</button>
+      </nav>
+      <div class="progress-indicator" id="progress-indicator">…</div>
+    </header>
+
+    <section id="view-session">
+      <div class="stats-mini">
+        <div class="stat-mini"><span class="num" id="mini-grad">0</span><span class="lbl">Graduated</span></div>
+        <div class="stat-mini"><span class="num" id="mini-learn">0</span><span class="lbl">Learning</span></div>
+        <div class="stat-mini"><span class="num" id="mini-new">0</span><span class="lbl">New</span></div>
+        <div class="stat-mini"><span class="num" id="mini-due">0</span><span class="lbl">Due</span></div>
+      </div>
+
+      <div id="screen-idle" class="screen" style="display:none;">
+        <h2 id="idle-title">Loading…</h2>
+        <p id="idle-sub"></p>
+        <button class="big-btn" id="start-session">▶ Start Session</button>
+      </div>
+
+      <div id="screen-done" class="screen" style="display:none;">
+        <h2>Session complete ✅</h2>
+        <p id="done-summary"></p>
+        <button class="big-btn" id="done-view">View Progress</button>
+      </div>
+
+      <div id="card" class="card" style="display:none;">
+        <div class="badge badge-role" id="role-badge" style="display:none;"></div>
+        <div class="badge badge-pass" id="pass-badge" style="display:none;"></div>
+        <div class="badge badge-state badge-new" id="badge">NEW</div>
+        <div class="en" id="en-text"></div>
+        <div class="fr" id="fr-text"></div>
+        <div class="prompt" id="prompt"></div>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div id="card-controls" class="btn-grid" style="display:none;">
+        <button class="btn primary" id="play">▶ Play</button>
+        <button class="btn" id="replay-pair">🔁 Replay</button>
+        <button class="btn" id="replay-fr">🔊 FR</button>
+        <button class="btn" id="replay-en">🔊 EN</button>
+        <button class="btn" id="toggle-text">👁 Show/Hide</button>
+      </div>
+
+      <div id="card-nav" class="nav-grid" style="display:none;">
+        <button class="btn" id="prev">←</button>
+        <button class="btn" id="skip">⏭ Skip</button>
+        <button class="btn success" id="next">→ Complete</button>
+      </div>
+    </section>
+
+    <section id="view-progress" style="display:none;">
+      <div class="progress-hero">
+        <div class="pct" id="pg-pct">0%</div>
+        <div class="sub" id="pg-sub">0 of 3000 sentences graduated</div>
+        <div class="bar-track"><div class="bar-fill" id="pg-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card grad">
+          <div class="value" id="pg-grad">0</div>
+          <div class="label">Graduated</div>
+        </div>
+        <div class="stat-card learn">
+          <div class="value" id="pg-learn">0</div>
+          <div class="label">Learning</div>
+        </div>
+        <div class="stat-card new">
+          <div class="value" id="pg-new">0</div>
+          <div class="label">Not started</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="pg-due">0</div>
+          <div class="label">Due today</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Streak</h3>
+        <div class="sub">Consecutive days with at least one completion.</div>
+        <div class="streak-row">
+          <div class="streak-item current">
+            <div class="big" id="pg-current-streak">0</div>
+            <div class="lbl">Current streak</div>
+          </div>
+          <div class="streak-item">
+            <div class="big" id="pg-longest-streak">0</div>
+            <div class="lbl">Longest streak</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Graduations per day</h3>
+        <div class="sub" id="pg-chart-sub">Last 30 days</div>
+        <div class="chart-wrap">
+          <div class="chart" id="pg-chart"></div>
+          <div class="chart-labels" id="pg-chart-labels"></div>
+        </div>
+        <div class="chart-legend">
+          <span><span class="dot primary"></span>Graduations</span>
+          <span><span class="dot today"></span>Today</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Estimated finish</h3>
+        <div class="sub">Based on your current "New per day" setting.</div>
+        <div class="estimate">
+          <div class="icon">📅</div>
+          <div class="body">
+            <div class="line1" id="pg-eta-line1">—</div>
+            <div class="line2" id="pg-eta-line2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Days active</h3>
+        <div class="sub">Total days on which you completed at least one sentence.</div>
+        <div class="estimate">
+          <div class="icon">🔥</div>
+          <div class="body">
+            <div class="line1" id="pg-days-active">0 days</div>
+            <div class="line2" id="pg-days-active-sub">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="settings">
+
+      <details open>
+        <summary>Session</summary>
+        <div class="body">
+          <div class="row">
+            <label>New per day
+              <input type="number" id="daily-new" min="0" max="100" value="10">
+            </label>
+            <label>Max reviews
+              <input type="number" id="daily-review" min="0" max="500" value="60">
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Chunked 2-pass</summary>
+        <div class="body">
+          <label>Chunk size
+            <input type="number" id="chunk-size" min="1" max="50" value="10">
+          </label>
+          <div class="check">
+            <input type="checkbox" id="shuffle-2nd" checked>
+            <label for="shuffle-2nd">Shuffle second pass</label>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Drill prompt (pass 2)</summary>
+        <div class="body">
+          <label>Drill mode
+            <select id="drill-mode">
+              <option value="off">Off — no drill prompt</option>
+              <option value="smart" selected>Smart — reviews only</option>
+              <option value="every">Every — all sentences</option>
+              <option value="new-only">New only</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Audio</summary>
+        <div class="body">
+          <label>French voice <select id="fr-voice"></select></label>
+          <label>English voice <select id="en-voice"></select></label>
+          <label>French rate: <span class="slider-val" id="fr-rate-val">0.9</span>
+            <input type="range" id="fr-rate" min="0.5" max="1.5" step="0.05" value="0.9">
+          </label>
+          <label>English rate: <span class="slider-val" id="en-rate-val">1.0</span>
+            <input type="range" id="en-rate" min="0.5" max="1.5" step="0.05" value="1.0">
+          </label>
+          <label>Pause between phrases (ms): <span class="slider-val" id="pause-val">500</span>
+            <input type="range" id="pause" min="0" max="2000" step="50" value="500">
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Danger zone</summary>
+        <div class="body">
+          <div class="actions">
+            <button class="btn danger" id="restart-session">Restart Today's Session</button>
+            <button class="btn danger" id="reset-all">Reset All Progress</button>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <div class="hint">
+      <span class="kb">Space</span> play &nbsp;·&nbsp;
+      <span class="kb">←</span> back &nbsp;·&nbsp;
+      <span class="kb">→</span> complete &nbsp;·&nbsp;
+      <span class="kb">S</span> skip &nbsp;·&nbsp;
+      <span class="kb">R</span> replay &nbsp;·&nbsp;
+      <span class="kb">F</span> FR &nbsp;·&nbsp;
+      <span class="kb">E</span> EN &nbsp;·&nbsp;
+      <span class="kb">H</span> hide
+    </div>
+
+  </div>
+
+<script src="srs.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'gsr_progress_v5';
+
+  var DRILL_PROMPTS = [
+    'Peux-tu transformer cette phrase?',
+    'Peux-tu dire la même chose autrement?',
+    'Comment dirais-tu ça autrement?'
+  ];
+
+  var synth = window.speechSynthesis;
+  var voices = [];
+  var deck = [];
+  var deckIndexById = {};
+  var textHidden = false;
+  var view = 'session';
+
+  var progress = {};
+  var daysActive = {};
+
+  var sessionDate = '';
+  var sessionQueue = [];
+  var sessionRoles = {};
+  var sessionCompleted = {};
+  var events = [];
+  var lastOccurrence = {};
+  var sessionPos = 0;
+
+  var el = function (id) { return document.getElementById(id); };
+  function today() { return SRS.todayStr(); }
+
+  function currentMode() {
+    var t = today();
+    if (sessionDate !== t) return 'idle';
+    if (!events.length) return 'idle';
+    if (sessionPos >= events.length) return 'done';
+    return 'active';
+  }
+
+  function daysBetween(a, b) {
+    var pa = a.split('-'), pb = b.split('-');
+    var da = new Date(Number(pa[0]), Number(pa[1]) - 1, Number(pa[2]));
+    var db = new Date(Number(pb[0]), Number(pb[1]) - 1, Number(pb[2]));
+    return Math.round((db - da) / 86400000);
+  }
+  function addDays(dateStr, n) { return SRS.addDays(dateStr, n); }
+  function relativeDue(dateStr, t) {
+    if (!dateStr) return '';
+    if (dateStr === t) return 'due today';
+    if (dateStr < t) return 'overdue ' + daysBetween(dateStr, t) + 'd';
+    var d = daysBetween(t, dateStr);
+    return d === 1 ? 'due tomorrow' : 'due in ' + d + 'd';
+  }
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var p = dateStr.split('-');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[Number(p[1]) - 1] + ' ' + Number(p[2]) + ', ' + p[0];
+  }
+
+  function shuffleInPlace(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function buildEvents(queue, chunkSize, shuffleSecond) {
+    var out = [];
+    var numChunks = Math.ceil(queue.length / chunkSize);
+    for (var c = 0; c < numChunks; c++) {
+      var chunk = queue.slice(c * chunkSize, (c + 1) * chunkSize);
+      for (var i = 0; i < chunk.length; i++) out.push({ id: chunk[i], pass: 1, chunkIdx: c });
+      var second = chunk.slice();
+      if (shuffleSecond) shuffleInPlace(second);
+      for (var j = 0; j < second.length; j++) out.push({ id: second[j], pass: 2, chunkIdx: c });
+    }
+    return out;
+  }
+  function computeLastOccurrence(evts) {
+    var last = {};
+    for (var i = 0; i < evts.length; i++) last[evts[i].id] = i;
+    return last;
+  }
+
+  function saveProgress() {
+    try {
+      var data = {
+        version: 5,
+        progress: progress,
+        daysActive: daysActive,
+        sessionDate: sessionDate,
+        sessionQueue: sessionQueue,
+        sessionRoles: sessionRoles,
+        sessionCompleted: sessionCompleted,
+        events: events,
+        sessionPos: sessionPos,
+        view: view,
+        settings: readSettingsFromUI()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { console.warn('save failed', e); }
+  }
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data.version !== 5) return;
+      progress = data.progress || {};
+      daysActive = data.daysActive || {};
+      sessionDate = data.sessionDate || '';
+      sessionQueue = data.sessionQueue || [];
+      sessionRoles = data.sessionRoles || {};
+      sessionCompleted = data.sessionCompleted || {};
+      events = data.events || [];
+      sessionPos = data.sessionPos || 0;
+      view = data.view || 'session';
+      if (sessionDate !== today()) clearSession();
+      else lastOccurrence = computeLastOccurrence(events);
+      if (data.settings) window.__pendingSettings = data.settings;
+    } catch (e) { console.warn('load failed', e); }
+  }
+  function clearSession() {
+    sessionDate = '';
+    sessionQueue = [];
+    sessionRoles = {};
+    sessionCompleted = {};
+    events = [];
+    lastOccurrence = {};
+    sessionPos = 0;
+  }
+  function readSettingsFromUI() {
+    return {
+      dailyNew:      el('daily-new').value,
+      dailyReview:   el('daily-review').value,
+      chunkSize:     el('chunk-size').value,
+      shuffle2nd:    el('shuffle-2nd').checked,
+      drillMode:     el('drill-mode').value,
+      frVoice:       el('fr-voice').value,
+      enVoice:       el('en-voice').value,
+      frRate:        el('fr-rate').value,
+      enRate:        el('en-rate').value,
+      pause:         el('pause').value,
+      textHidden:    textHidden
+    };
+  }
+  function applyPendingSettings() {
+    var s = window.__pendingSettings;
+    if (!s) return;
+    if (s.dailyNew)        el('daily-new').value = s.dailyNew;
+    if (s.dailyReview)     el('daily-review').value = s.dailyReview;
+    if (s.chunkSize)       el('chunk-size').value = s.chunkSize;
+    if (typeof s.shuffle2nd === 'boolean') el('shuffle-2nd').checked = s.shuffle2nd;
+    if (s.drillMode)       el('drill-mode').value = s.drillMode;
+    if (s.frRate) { el('fr-rate').value = s.frRate; el('fr-rate-val').textContent = s.frRate; }
+    if (s.enRate) { el('en-rate').value = s.enRate; el('en-rate-val').textContent = s.enRate; }
+    if (s.pause)  { el('pause').value = s.pause;  el('pause-val').textContent = s.pause; }
+    if (typeof s.textHidden === 'boolean') textHidden = s.textHidden;
+    if (s.frVoice) {
+      var fr = voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; });
+      for (var i = 0; i < fr.length; i++) if (fr[i].name === s.frVoice) { el('fr-voice').value = String(i); break; }
+    }
+    if (s.enVoice) {
+      var en = voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; });
+      for (var j = 0; j < en.length; j++) if (en[j].name === s.enVoice) { el('en-voice').value = String(j); break; }
+    }
+    window.__pendingSettings = null;
+    render();
+  }
+  function resetAll() {
+    if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    progress = {}; daysActive = {};
+    clearSession();
+    render();
+    updateStats();
+    saveProgress();
+  }
+  function restartSession() {
+    if (!confirm("Discard today's session and rebuild it from current SRS state?")) return;
+    clearSession();
+    render();
+    saveProgress();
+  }
+
+  function computeStats() {
+    var t = today();
+    var grad = 0, learn = 0, nw = 0, dueCount = 0;
+    for (var i = 0; i < deck.length; i++) {
+      var e = progress[deck[i].id];
+      if (!e || e.stage === 0) nw++;
+      else if (e.graduated) grad++;
+      else { learn++; if (e.nextDue && e.nextDue <= t) dueCount++; }
+    }
+    return { grad: grad, learn: learn, nw: nw, dueCount: dueCount, total: deck.length };
+  }
+
+  function updateStats() {
+    var s = computeStats();
+    el('mini-grad').textContent  = s.grad;
+    el('mini-learn').textContent = s.learn;
+    el('mini-new').textContent   = s.nw;
+    el('mini-due').textContent   = s.dueCount;
+    if (view === 'progress') renderProgress();
+  }
+
+  function computeGraduationsByDay() {
+    var map = {};
+    for (var id in progress) {
+      var e = progress[id];
+      if (e.graduated && e.graduatedOn) {
+        map[e.graduatedOn] = (map[e.graduatedOn] || 0) + 1;
+      }
+    }
+    return map;
+  }
+
+  function computeStreaks(daysActiveMap) {
+    var dates = Object.keys(daysActiveMap).sort();
+    if (!dates.length) return { current: 0, longest: 0 };
+    var longest = 1;
+    var run = 1;
+    for (var i = 1; i < dates.length; i++) {
+      var diff = daysBetween(dates[i - 1], dates[i]);
+      if (diff === 1) { run++; if (run > longest) longest = run; }
+      else run = 1;
+    }
+    var t = today();
+    var cursor = daysActiveMap[t] ? t : addDays(t, -1);
+    var current = 0;
+    while (daysActiveMap[cursor]) {
+      current++;
+      cursor = addDays(cursor, -1);
+    }
+    return { current: current, longest: longest };
+  }
+
+  function loadVoices() {
+    voices = synth.getVoices();
+    populateSelect('fr-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; }));
+    populateSelect('en-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; }));
+    applyPendingSettings();
+  }
+  function populateSelect(id, list) {
+    var sel = el(id);
+    if (!sel) {
+      console.warn('populateSelect: element #' + id + ' not found in DOM');
+      return;
+    }
+    var prev = sel.value;
+    sel.innerHTML = '';
+    if (!list.length) {
+      var o = document.createElement('option');
+      o.textContent = '(none found)';
+      sel.appendChild(o);
+      return;
+    }
+    list.forEach(function (v, i) {
+      var opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = v.name + ' — ' + v.lang;
+      sel.appendChild(opt);
+    });
+    if (prev && prev !== '' && parseInt(prev, 10) < list.length) sel.value = prev;
+    else sel.value = '0';
+  }
+  function getVoice(prefix) {
+    var sel = el(prefix + '-voice');
+    if (!sel) return null;
+    var idx = parseInt(sel.value, 10);
+    if (isNaN(idx)) return null;
+    var list = voices.filter(function (v) { return v.lang && v.lang.indexOf(prefix) === 0; });
+    return list[idx] || null;
+  }
+  if (typeof synth.onvoiceschanged !== 'undefined') synth.onvoiceschanged = loadVoices;
+  loadVoices();
+  setTimeout(loadVoices, 500);
+  setTimeout(loadVoices, 1500);
+
+  ['fr-rate', 'en-rate', 'pause'].forEach(function (id) {
+    el(id).addEventListener('input', function () {
+      el(id + '-val').textContent = this.value;
+      saveProgress();
+    });
+  });
+  ['fr-voice', 'en-voice', 'daily-new', 'daily-review', 'chunk-size', 'drill-mode', 'shuffle-2nd'].forEach(function (id) {
+    el(id).addEventListener('change', function () { saveProgress(); updateStats(); render(); });
+    el(id).addEventListener('input',  function () { saveProgress(); updateStats(); render(); });
+  });
+
+  loadProgress();
+  fetch('glossika_clean.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      deck = data;
+      for (var i = 0; i < deck.length; i++) deckIndexById[deck[i].id] = i;
+      render();
+      updateStats();
+      if (currentMode() === 'active' && view === 'session') playPair();
+    })
+    .catch(function (err) {
+      document.body.innerHTML = '<div class="container"><div class="screen"><h2>Failed to load data</h2><p>Serve via <code>python3 -m http.server 8000</code></p></div></div>';
+      console.error(err);
+    });
+
+  function computePlan() {
+    var t = today();
+    var allIds = deck.map(function (s) { return s.id; });
+    var settings = {
+      dailyNewLimit:    parseInt(el('daily-new').value, 10) || 0,
+      dailyReviewLimit: parseInt(el('daily-review').value, 10) || 0
+    };
+    return SRS.buildSession(progress, allIds, t, settings);
+  }
+  function startSession() {
+    var plan = computePlan();
+    if (plan.session.length === 0) { alert('Nothing to do today!'); return; }
+    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var shuffleSecond = !!el('shuffle-2nd').checked;
+    sessionDate = today();
+    sessionQueue = plan.session;
+    sessionRoles = {};
+    sessionCompleted = {};
+    plan.reviews.forEach(function (id) { sessionRoles[id] = 'review'; });
+    plan.news.forEach(function (id)    { sessionRoles[id] = 'new'; });
+    events = buildEvents(sessionQueue, chunkSize, shuffleSecond);
+    lastOccurrence = computeLastOccurrence(events);
+    sessionPos = 0;
+    saveProgress();
+    switchView('session');
+    render();
+    playPair();
+  }
+
+  function currentEvent() { return currentMode() === 'active' ? events[sessionPos] : null; }
+  function currentSentence() {
+    var ev = currentEvent();
+    if (!ev) return null;
+    var pos = deckIndexById[ev.id];
+    return pos === undefined ? null : deck[pos];
+  }
+  function drillApplies(ev) {
+    var mode = el('drill-mode').value;
+    if (mode === 'off') return false;
+    if (ev.pass !== 2) return false;
+    var role = sessionRoles[ev.id] || 'review';
+    if (mode === 'every')    return true;
+    if (mode === 'new-only') return role === 'new';
+    return role === 'review';
+  }
+  function pickPrompt(seed) { return DRILL_PROMPTS[Math.abs(seed) % DRILL_PROMPTS.length]; }
+
+  function switchView(v) {
+    view = v;
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i].dataset.view === v);
+    el('view-session').style.display  = v === 'session'  ? 'block' : 'none';
+    el('view-progress').style.display = v === 'progress' ? 'block' : 'none';
+    if (v === 'progress') renderProgress();
+    renderIndicator();
+    saveProgress();
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { switchView(t.dataset.view); });
+  });
+
+  function render() {
+    var mode = currentMode();
+
+    el('screen-idle').style.display = mode === 'idle' ? 'block' : 'none';
+    el('screen-done').style.display = mode === 'done' ? 'block' : 'none';
+    el('card').style.display = mode === 'active' ? 'flex' : 'none';
+    el('card-controls').style.display = mode === 'active' ? 'grid' : 'none';
+    el('card-nav').style.display = mode === 'active' ? 'flex' : 'none';
+
+    if (mode === 'idle') renderIdle();
+    if (mode === 'done') renderDone();
+    if (mode === 'active') renderCard();
+    renderIndicator();
+    updateStats();
+
+    if (view === 'progress') renderProgress();
+  }
+
+  function renderIndicator() {
+    var mode = currentMode();
+    if (mode === 'active') {
+      el('progress-indicator').textContent = (sessionPos + 1) + ' / ' + events.length;
+    } else if (mode === 'done') {
+      el('progress-indicator').textContent = 'done · ' + sessionQueue.length + ' sentences';
+    } else {
+      el('progress-indicator').textContent = '';
+    }
+  }
+
+  function renderIdle() {
+    var plan = computePlan();
+    var nNew = plan.news.length;
+    var nRev = plan.reviews.length;
+    var total = nNew + nRev;
+    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var shuffleOn = !!el('shuffle-2nd').checked;
+    var numChunks = total > 0 ? Math.ceil(total / chunkSize) : 0;
+    var totalEvents = total * 2;
+
+    if (total === 0) {
+      el('idle-title').textContent = 'Nothing due today';
+      el('idle-sub').textContent = 'No new or review sentences queued. Come back tomorrow, or change your daily limits below.';
+      el('start-session').disabled = true;
+      el('start-session').textContent = 'Nothing to do';
+    } else {
+      el('idle-title').textContent = "Today's Session";
+      el('idle-sub').innerHTML =
+        '<strong>' + nNew + '</strong> new + <strong>' + nRev + '</strong> reviews = <strong>' + total + '</strong> sentences<br>' +
+        '<div class="meta-line">' +
+          numChunks + ' chunks of ' + chunkSize +
+          ' · ' + (shuffleOn ? 'shuffled' : 'sequential') + ' 2nd pass' +
+          ' · ' + totalEvents + ' playback events' +
+        '</div>';
+      el('start-session').disabled = false;
+      el('start-session').textContent = '▶ Start Session';
+    }
+  }
+
+  function renderDone() {
+    var total = sessionQueue.length;
+    var completedCount = 0;
+    for (var k in sessionCompleted) if (sessionCompleted[k]) completedCount++;
+    el('done-summary').innerHTML =
+      'You completed <strong>' + completedCount + ' / ' + total + '</strong> sentences today. ' +
+      'Come back tomorrow for the next batch.';
+  }
+
+  function renderCard() {
+    var s = currentSentence();
+    var ev = currentEvent();
+    if (!s || !ev) return;
+
+    el('en-text').textContent = s.english;
+    el('fr-text').textContent = s.french.join('  /  ');
+
+    var promptEl = el('prompt');
+    if (drillApplies(ev)) {
+      promptEl.textContent = '💬 ' + pickPrompt(ev.id + ev.pass);
+      promptEl.classList.add('show');
+    } else {
+      promptEl.classList.remove('show');
+    }
+
+    var role = sessionRoles[s.id] || 'review';
+    el('role-badge').textContent = role === 'new' ? 'NEW' : 'REVIEW';
+    el('role-badge').style.display = 'inline-block';
+
+    el('pass-badge').textContent = 'PASS ' + ev.pass;
+    el('pass-badge').style.display = 'inline-block';
+
+    var badge = el('badge');
+    var e = progress[s.id];
+    if (!e || e.stage === 0) {
+      badge.textContent = 'NEW';
+      badge.className = 'badge badge-state badge-new';
+    } else if (e.graduated) {
+      badge.textContent = 'GRADUATED';
+      badge.className = 'badge badge-state badge-grad';
+    } else {
+      var t = today();
+      var cls = 'badge-future';
+      if (e.nextDue < t) cls = 'badge-overdue';
+      else if (e.nextDue === t) cls = 'badge-due';
+      badge.textContent = 'S' + e.stage + ' · ' + relativeDue(e.nextDue, t);
+      badge.className = 'badge badge-state ' + cls;
+    }
+
+    var numChunks = Math.ceil(sessionQueue.length / (parseInt(el('chunk-size').value, 10) || 10));
+    var variantNote = s.french.length > 1 ? ' · ' + s.french.length + ' variants' : '';
+    el('meta').textContent =
+      'id ' + s.id + variantNote +
+      ' · pass ' + ev.pass + '/2' +
+      ' · chunk ' + (ev.chunkIdx + 1) + '/' + numChunks;
+
+    if (textHidden) el('card').classList.add('hidden');
+    else el('card').classList.remove('hidden');
+  }
+
+  function renderProgress() {
+    if (!deck.length) return;
+    var stats = computeStats();
+    var pct = stats.total > 0 ? (stats.grad / stats.total) * 100 : 0;
+    el('pg-pct').textContent = pct.toFixed(1) + '%';
+    el('pg-sub').textContent  = stats.grad + ' of ' + stats.total + ' sentences graduated';
+    el('pg-fill').style.width = pct + '%';
+    el('pg-grad').textContent  = stats.grad;
+    el('pg-learn').textContent = stats.learn;
+    el('pg-new').textContent   = stats.nw;
+    el('pg-due').textContent   = stats.dueCount;
+
+    var streaks = computeStreaks(daysActive);
+    el('pg-current-streak').textContent = streaks.current;
+    el('pg-longest-streak').textContent = streaks.longest;
+
+    var totalDays = Object.keys(daysActive).length;
+    el('pg-days-active').textContent = totalDays + (totalDays === 1 ? ' day' : ' days');
+    el('pg-days-active-sub').textContent =
+      totalDays > 0
+        ? 'Started on ' + formatDate(Object.keys(daysActive).sort()[0])
+        : 'No activity yet.';
+
+    renderChart();
+    renderETA(stats);
+  }
+
+  function renderChart() {
+    var map = computeGraduationsByDay();
+    var container = el('pg-chart');
+    var labels = el('pg-chart-labels');
+    container.innerHTML = '';
+    labels.innerHTML = '';
+
+    var days = [];
+    var t = today();
+    for (var i = 29; i >= 0; i--) days.push(addDays(t, -i));
+
+    var maxCount = 0;
+    for (var j = 0; j < days.length; j++) {
+      var c = map[days[j]] || 0;
+      if (c > maxCount) maxCount = c;
+    }
+    if (maxCount === 0) maxCount = 1;
+
+    for (var k = 0; k < days.length; k++) {
+      var d = days[k];
+      var count = map[d] || 0;
+      var slot = document.createElement('div');
+      slot.className = 'bar-slot';
+      if (d === t) slot.classList.add('today');
+      if (count === 0) slot.classList.add('empty');
+
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var h = count === 0 ? 3 : Math.max(4, (count / maxCount) * 100);
+      bar.style.height = h + '%';
+      bar.title = formatDate(d) + ' — ' + count + ' graduated';
+      slot.appendChild(bar);
+      container.appendChild(slot);
+
+      var lbl = document.createElement('span');
+      if (k === 0 || k === days.length - 1 || k % 5 === 0) {
+        var parts = d.split('-');
+        lbl.textContent = parts[2] + '/' + parts[1];
+      } else {
+        lbl.textContent = '';
+      }
+      labels.appendChild(lbl);
+    }
+
+    el('pg-chart-sub').textContent = 'Last 30 days · max ' + maxCount + ' in a day';
+  }
+
+  function renderETA(stats) {
+    var dailyNew = parseInt(el('daily-new').value, 10) || 0;
+    if (dailyNew <= 0) {
+      el('pg-eta-line1').textContent = 'Set "New per day" > 0';
+      el('pg-eta-line2').textContent = 'Add new sentences daily to get an estimate.';
+      return;
+    }
+    var remaining = stats.total - stats.grad;
+    if (remaining <= 0) {
+      el('pg-eta-line1').textContent = '🎉 All sentences graduated!';
+      el('pg-eta-line2').textContent = 'You finished the deck.';
+      return;
+    }
+    var daysLeft = Math.ceil(remaining / dailyNew);
+    var eta = addDays(today(), daysLeft);
+    el('pg-eta-line1').textContent = 'Finish in about ' + daysLeft + ' days';
+    el('pg-eta-line2').textContent =
+      'Around ' + formatDate(eta) + ' at ' + dailyNew + ' new/day (reviews included).';
+  }
+
+  function speak(text, langPrefix, rate) {
+    return new Promise(function (resolve) {
+      var u = new SpeechSynthesisUtterance(text);
+      var v = getVoice(langPrefix);
+      if (v) u.voice = v;
+      u.lang = (v && v.lang) || (langPrefix === 'fr' ? 'fr-FR' : 'en-US');
+      u.rate = rate;
+      u.onend = function () { resolve(); };
+      u.onerror = function (e) { console.warn('TTS error', langPrefix, e.error); resolve(); };
+      synth.speak(u);
+    });
+  }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  var cancelled = false;
+  function stopAll() { cancelled = true; synth.cancel(); }
+  function playSequence(parts) {
+    stopAll();
+    cancelled = false;
+    var pauseMs = parseInt(el('pause').value, 10);
+    (async function () {
+      for (var i = 0; i < parts.length; i++) {
+        if (cancelled) return;
+        await speak(parts[i].text, parts[i].lang, parts[i].rate);
+        if (cancelled) return;
+        if (i < parts.length - 1) await wait(pauseMs);
+      }
+    })();
+  }
+  function pairParts() {
+    var s = currentSentence();
+    var ev = currentEvent();
+    if (!s || !ev) return null;
+    var parts = [
+      { lang: 'en', text: s.english,   rate: parseFloat(el('en-rate').value) },
+      { lang: 'fr', text: s.french[0], rate: parseFloat(el('fr-rate').value) }
+    ];
+    if (drillApplies(ev)) {
+      parts.push({ lang: 'fr', text: pickPrompt(ev.id + ev.pass), rate: parseFloat(el('fr-rate').value) });
+    }
+    return parts;
+  }
+  function playPair() { var parts = pairParts(); if (parts) playSequence(parts); }
+  function playFrenchOnly() {
+    var s = currentSentence(); if (!s) return;
+    playSequence([{ lang: 'fr', text: s.french[0], rate: parseFloat(el('fr-rate').value) }]);
+  }
+  function playEnglishOnly() {
+    var s = currentSentence(); if (!s) return;
+    playSequence([{ lang: 'en', text: s.english, rate: parseFloat(el('en-rate').value) }]);
+  }
+
+  function completeCurrent() {
+    var ev = currentEvent(); if (!ev) return;
+    var id = ev.id;
+    if (sessionCompleted[id]) return;
+    if (lastOccurrence[id] !== sessionPos) return;
+
+    var t = today();
+    var before = progress[id] || SRS.makeNewEntry(id, t);
+    var after = SRS.completeEntry(before, t);
+    if (!before.graduated && after.graduated) after.graduatedOn = t;
+    progress[id] = after;
+    sessionCompleted[id] = true;
+    daysActive[t] = true;
+
+    saveProgress();
+    updateStats();
+  }
+  function advance(delta) {
+    var n = sessionPos + delta;
+    if (n < 0) n = 0;
+    if (n >= events.length) {
+      sessionPos = events.length;
+      saveProgress();
+      render();
+      stopAll();
+      return;
+    }
+    stopAll();
+    sessionPos = n;
+    render();
+    saveProgress();
+    playPair();
+  }
+  function next() { completeCurrent(); render(); advance(+1); }
+  function prev() { advance(-1); }
+  function skip() { advance(+1); }
+
+  el('start-session').addEventListener('click', startSession);
+  el('play').addEventListener('click', function () {
+    if (synth.speaking) stopAll(); else playPair();
+  });
+  el('replay-pair').addEventListener('click', playPair);
+  el('replay-fr').addEventListener('click', playFrenchOnly);
+  el('replay-en').addEventListener('click', playEnglishOnly);
+  el('prev').addEventListener('click', prev);
+  el('skip').addEventListener('click', skip);
+  el('next').addEventListener('click', next);
+  el('toggle-text').addEventListener('click', function () {
+    textHidden = !textHidden; render(); saveProgress();
+  });
+  el('card').addEventListener('click', function () {
+    textHidden = !textHidden; render(); saveProgress();
+  });
+  el('restart-session').addEventListener('click', restartSession);
+  el('reset-all').addEventListener('click', resetAll);
+  el('done-view').addEventListener('click', function () { switchView('progress'); });
+
+  document.addEventListener('keydown', function (e) {
+    if (view !== 'session') return;
+    if (currentMode() !== 'active') return;
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+    switch (e.code) {
+      case 'Space':
+        e.preventDefault();
+        if (synth.speaking) stopAll(); else playPair();
+        break;
+      case 'ArrowRight': e.preventDefault(); next(); break;
+      case 'ArrowLeft':  e.preventDefault(); prev(); break;
+      case 'KeyS': skip(); break;
+      case 'KeyR': playPair(); break;
+      case 'KeyF': playFrenchOnly(); break;
+      case 'KeyE': playEnglishOnly(); break;
+      case 'KeyH':
+        textHidden = !textHidden;
+        render(); saveProgress();
+        break;
+    }
+  });
+
+  switchView(view);
+
+})();
+</script>
+</body>
+</html>
