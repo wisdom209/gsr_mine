@@ -47,11 +47,15 @@
     if (!entry.nextDue) return false;
     return entry.nextDue <= today;
   }
+  function clampLimit(v, def, max) {
+    var n = (v === null || v === undefined || v === '') ? NaN : Number(v);
+    if (!isFinite(n)) n = def;
+    return Math.max(0, Math.min(max, Math.floor(n)));
+  }
   function buildSession(progress, allIds, today, settings) {
-    var newLimit = (settings && settings.dailyNewLimit) || 10;
-    var revLimit = (settings && settings.dailyReviewLimit) || 60;
-    newLimit = Math.max(0, Math.min(200, newLimit));
-    revLimit = Math.max(0, Math.min(500, revLimit));
+    // `x || default` treated an explicit 0 as "unset", so "0 new per day" still gave 10 new cards.
+    var newLimit = clampLimit(settings && settings.dailyNewLimit, 10, 200);
+    var revLimit = clampLimit(settings && settings.dailyReviewLimit, 60, 500);
     var due = []; var news = [];
     for (var i = 0; i < allIds.length; i++) {
       var id = allIds[i];

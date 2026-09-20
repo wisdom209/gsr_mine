@@ -508,7 +508,6 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     }@media (max-width: 480px) {
       .fr { font-size: 1.25em; }#main-srs .card { min-height: 180px; padding: 24px 18px; }#main-srs .screen { padding: 32px 18px; }#main-srs .progress-hero { padding: 22px 18px; }#main-srs .progress-hero .pct { font-size: 2.2em; }#main-srs .stat-card .value { font-size: 1.4em; }#main-srs .settings { padding: 16px; }#main-srs .hint { display: none; }
     }
-  }
 </style>
 <style>
 #main-news {
@@ -592,7 +591,6 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
   background: #0b1220; border: 1px solid var(--panel-2); border-radius: 8px;
   padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }#main-news .cheat-word { font-weight: 600; }#main-news .cheat-meaning { color: var(--muted); font-size: 13px; }#main-news .cheat-struct-item { flex-direction: column; align-items: flex-start; }#main-news .cheat-struct-item .cheat-structure { font-weight: 600; }#main-news .cheat-struct-item .cheat-example { color: var(--muted); font-size: 13px; font-style: italic; margin-top: 4px; }#main-news .cheat-tips { padding-left: 18px; margin: 0; }#main-news .cheat-tips li { margin: 4px 0; }
-}
 #main-news { background: linear-gradient(180deg, #0f172a, #1e293b 40%, #0f172a); min-height:100vh; color:#e2e8f0; }
 #main-news .topbar { position:sticky; top:60px; z-index:90; }
 #main-news main { max-width:860px; margin:24px auto; padding:0 16px 120px; }
@@ -1069,8 +1067,11 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     'Comment dirais-tu ça autrement?'
   ];
 
-  var synth = window.speechSynthesis;
+  var synth = window.speechSynthesis || { getVoices: function () { return []; }, speak: function () {}, cancel: function () {}, speaking: false };
   var voices = [];
+  // Voice choice saved by the user, keyed by <select> id. Option values are voiceURIs (stable),
+  // not indexes into a list that Chrome fills in progressively.
+  var savedVoice = { 'fr-voice': '', 'en-voice': '' };
   var deck = [];
   var deckIndexById = {};
   var textHidden = false;
@@ -1198,8 +1199,8 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
       chunkSize:     el('chunk-size').value,
       shuffle2nd:    el('shuffle-2nd').checked,
       drillMode:     el('drill-mode').value,
-      frVoice:       el('fr-voice').value,
-      enVoice:       el('en-voice').value,
+      frVoice:       savedVoice['fr-voice'],
+      enVoice:       savedVoice['en-voice'],
       frRate:        el('fr-rate').value,
       enRate:        el('en-rate').value,
       pause:         el('pause').value,
@@ -1218,16 +1219,10 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     if (s.enRate) { el('en-rate').value = s.enRate; el('en-rate-val').textContent = s.enRate; }
     if (s.pause)  { el('pause').value = s.pause;  el('pause-val').textContent = s.pause; }
     if (typeof s.textHidden === 'boolean') textHidden = s.textHidden;
-    if (s.frVoice) {
-      var fr = voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; });
-      for (var i = 0; i < fr.length; i++) if (fr[i].name === s.frVoice) { el('fr-voice').value = String(i); break; }
-    }
-    if (s.enVoice) {
-      var en = voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; });
-      for (var j = 0; j < en.length; j++) if (en[j].name === s.enVoice) { el('en-voice').value = String(j); break; }
-    }
+    // Voices load asynchronously; populateSelect() applies these once the lists exist.
+    if (s.frVoice) savedVoice['fr-voice'] = String(s.frVoice);
+    if (s.enVoice) savedVoice['en-voice'] = String(s.enVoice);
     window.__pendingSettings = null;
-    render();
   }
   function resetAll() {
     if (!confirm('Reset ALL progress? This cannot be undone.')) return;
@@ -1301,7 +1296,6 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     voices = synth.getVoices();
     populateSelect('fr-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('fr') === 0; }));
     populateSelect('en-voice', voices.filter(function (v) { return v.lang && v.lang.indexOf('en') === 0; }));
-    applyPendingSettings();
   }
   function populateSelect(id, list) {
     var sel = el(id);
@@ -1313,27 +1307,35 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     sel.innerHTML = '';
     if (!list.length) {
       var o = document.createElement('option');
+      o.value = '';
       o.textContent = '(none found)';
       sel.appendChild(o);
       return;
     }
-    list.forEach(function (v, i) {
+    var values = [];
+    list.forEach(function (v) {
       var opt = document.createElement('option');
-      opt.value = String(i);
+      opt.value = v.voiceURI || v.name;
+      values.push(opt.value);
       opt.textContent = v.name + ' — ' + v.lang;
       sel.appendChild(opt);
     });
-    if (prev && prev !== '' && parseInt(prev, 10) < list.length) sel.value = prev;
-    else sel.value = '0';
+    var wanted = savedVoice[id];
+    if (wanted && values.indexOf(wanted) !== -1) sel.value = wanted;
+    else if (prev && values.indexOf(prev) !== -1) sel.value = prev;
+    else sel.value = values[0];
   }
   function getVoice(prefix) {
     var sel = el(prefix + '-voice');
-    if (!sel) return null;
-    var idx = parseInt(sel.value, 10);
-    if (isNaN(idx)) return null;
+    if (!sel || !sel.value) return null;
     var list = voices.filter(function (v) { return v.lang && v.lang.indexOf(prefix) === 0; });
-    return list[idx] || null;
+    for (var i = 0; i < list.length; i++) {
+      if ((list[i].voiceURI || list[i].name) === sel.value) return list[i];
+    }
+    return null;
   }
+  loadProgress();
+  applyPendingSettings();
   if (typeof synth.onvoiceschanged !== 'undefined') synth.onvoiceschanged = loadVoices;
   loadVoices();
   setTimeout(loadVoices, 500);
@@ -1345,39 +1347,55 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
       saveProgress();
     });
   });
+  ['fr-voice', 'en-voice'].forEach(function (id) {
+    el(id).addEventListener('change', function () { if (this.value) savedVoice[id] = this.value; });
+  });
   ['fr-voice', 'en-voice', 'daily-new', 'daily-review', 'chunk-size', 'drill-mode', 'shuffle-2nd'].forEach(function (id) {
     el(id).addEventListener('change', function () { saveProgress(); updateStats(); render(); });
     el(id).addEventListener('input',  function () { saveProgress(); updateStats(); render(); });
   });
 
-  loadProgress();
   fetch('glossika_clean.json')
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (!Array.isArray(data) || !data.length) throw new Error('deck is empty or malformed');
+      return data;
+    })
     .then(function (data) {
       deck = data;
       for (var i = 0; i < deck.length; i++) deckIndexById[deck[i].id] = i;
       render();
       updateStats();
       if (currentMode() === 'active' && view === 'session') playPair();
-    })
-    .catch(function (err) {
-      document.body.innerHTML = '<div class="container"><div class="screen"><h2>Failed to load data</h2><p>Serve via <code>python3 -m http.server 8000</code></p></div></div>';
+    }, function (err) {
+      // Only replace the SRS pane; the old code did document.body.innerHTML = ..., which also
+      // destroyed the header, the tab switcher and the whole News Lab.
+      var pane = document.getElementById('main-srs');
+      if (pane) pane.innerHTML = '<div class="container"><div class="screen"><h2>Failed to load data</h2><p>Could not load <code>glossika_clean.json</code> (' + String(err && err.message || err).replace(/[<>&]/g, '') + ').</p></div></div>';
       console.error(err);
     });
 
+  function chunkSizeVal() {
+    var n = parseInt(el('chunk-size').value, 10);
+    return (isFinite(n) && n >= 1) ? Math.min(n, 200) : 10;
+  }
   function computePlan() {
     var t = today();
     var allIds = deck.map(function (s) { return s.id; });
+    function intOrUndef(id) { var n = parseInt(el(id).value, 10); return isNaN(n) ? undefined : n; }
     var settings = {
-      dailyNewLimit:    parseInt(el('daily-new').value, 10) || 0,
-      dailyReviewLimit: parseInt(el('daily-review').value, 10) || 0
+      dailyNewLimit:    intOrUndef('daily-new'),
+      dailyReviewLimit: intOrUndef('daily-review')
     };
     return SRS.buildSession(progress, allIds, t, settings);
   }
   function startSession() {
     var plan = computePlan();
     if (plan.session.length === 0) { alert('Nothing to do today!'); return; }
-    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var chunkSize = chunkSizeVal();
     var shuffleSecond = !!el('shuffle-2nd').checked;
     sessionDate = today();
     sessionQueue = plan.session;
@@ -1460,7 +1478,7 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     var nNew = plan.news.length;
     var nRev = plan.reviews.length;
     var total = nNew + nRev;
-    var chunkSize = parseInt(el('chunk-size').value, 10) || 10;
+    var chunkSize = chunkSizeVal();
     var shuffleOn = !!el('shuffle-2nd').checked;
     var numChunks = total > 0 ? Math.ceil(total / chunkSize) : 0;
     var totalEvents = total * 2;
@@ -1533,7 +1551,7 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
       badge.className = 'badge badge-state ' + cls;
     }
 
-    var numChunks = Math.ceil(sessionQueue.length / (parseInt(el('chunk-size').value, 10) || 10));
+    var numChunks = Math.ceil(sessionQueue.length / (chunkSizeVal()));
     var variantNote = s.french.length > 1 ? ' · ' + s.french.length + ' variants' : '';
     el('meta').textContent =
       'id ' + s.id + variantNote +
@@ -1640,6 +1658,7 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
 
   function speak(text, langPrefix, rate) {
     return new Promise(function (resolve) {
+      if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') { resolve(); return; }
       var u = new SpeechSynthesisUtterance(text);
       var v = getVoice(langPrefix);
       if (v) u.voice = v;
@@ -1651,17 +1670,22 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
     });
   }
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-  var cancelled = false;
-  function stopAll() { cancelled = true; synth.cancel(); }
+  // Token instead of a shared boolean: synth.cancel() resolves the OLD sequence's pending
+  // promise asynchronously, by which time a `cancelled` flag had already been reset to false by
+  // the NEW sequence, so the old sequence kept going and both played at once (double audio when
+  // pressing Next quickly).
+  var playToken = 0;
+  function stopAll() { playToken++; synth.cancel(); }
+  window.__srsStopAll = stopAll;
   function playSequence(parts) {
     stopAll();
-    cancelled = false;
-    var pauseMs = parseInt(el('pause').value, 10);
+    var token = playToken;
+    var pauseMs = parseInt(el('pause').value, 10) || 0;
     (async function () {
       for (var i = 0; i < parts.length; i++) {
-        if (cancelled) return;
+        if (token !== playToken) return;
         await speak(parts[i].text, parts[i].lang, parts[i].rate);
-        if (cancelled) return;
+        if (token !== playToken) return;
         if (i < parts.length - 1) await wait(pauseMs);
       }
     })();
@@ -1748,6 +1772,9 @@ body { margin:0; font-family: -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Ro
 
   document.addEventListener('keydown', function (e) {
     if (view !== 'session') return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var pane = document.getElementById('main-srs');
+    if (!pane || pane.style.display === 'none') return;   // News Lab tab is showing
     if (currentMode() !== 'active') return;
     var tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
@@ -1820,6 +1847,28 @@ function setProgress(step) {
     el.classList.toggle('locked', i > state.maxStepIndex);
     el.classList.toggle('unlocked', i <= state.maxStepIndex && i !== idx);
   });
+}
+
+// Clear everything derived from the chosen article/adaptation. Previously choosing a new
+// article kept the OLD adapted text and unlocked steps, so the archive entry got the wrong title
+// and the quiz steps could run against the previous article; re-adapting kept stale questions.
+function resetLessonDom() {
+  ['scoreP1', 'scoreP2', 'scoreWA', 'scoreWB', 'scoreDict'].forEach(id => { $(id).textContent = ''; });
+  ['btnToPart2', 'btnToWritingA', 'btnToWritingB', 'btnToDictation', 'btnToCheatSheet']
+    .forEach(id => $(id).classList.add('hidden'));
+  ['part1Quiz', 'part2Quiz', 'writingAForm', 'writingBForm', 'dictForm', 'cheatContent']
+    .forEach(id => { $(id).innerHTML = ''; });
+  $('part2Transcript').textContent = '';
+}
+
+function resetLessonState() {
+  state.adapted = null;
+  state.part1Questions = []; state.part2Questions = [];
+  state.writingA = []; state.writingB = []; state.dictation = []; state.cheatsheet = null;
+  state.writingAAnswers = []; state.writingBAnswers = []; state.dictationAnswers = [];
+  state.writingAResults = []; state.writingBResults = []; state.dictationResults = [];
+  state.maxStepIndex = ORDER.indexOf('news');
+  resetLessonDom();
 }
 
 function escapeHtml(s) {
@@ -1949,10 +1998,8 @@ function chooseArticle(i) {
   $('adaptStatus').textContent = '';
   // Starting fresh on a new article opens a new archive entry (old news gets archived too).
   state.sessionId = null;
-  state.part1Questions = []; state.part2Questions = [];
-  state.writingA = []; state.writingB = []; state.dictation = []; state.cheatsheet = null;
-  state.writingAAnswers = []; state.writingBAnswers = []; state.dictationAnswers = [];
-  state.writingAResults = []; state.writingBResults = []; state.dictationResults = [];
+  state.epoch = (state.epoch || 0) + 1;
+  resetLessonState();
   showView('lesson');
   saveSession();
 }
@@ -1972,6 +2019,7 @@ function buildSnapshot() {
 }
 
 function applySnapshot(snap) {
+  resetLessonDom();
   state.chosen = snap.chosen || null;
   state.level = snap.level || 'A1';
   state.adapted = snap.adapted || null;
@@ -2007,8 +2055,16 @@ function applySnapshot(snap) {
   }
 }
 
-async function saveSession() {
+let saveChain = Promise.resolve();
+function saveSession() {
+  // Serialize: two overlapping first-saves both went out with id=null and created duplicate entries.
+  saveChain = saveChain.then(doSaveSession, doSaveSession);
+  return saveChain;
+}
+
+async function doSaveSession() {
   if (!state.chosen) return; // nothing worth archiving yet
+  const epoch = state.epoch || 0;
   try {
     const r = await fetch('/api/sessions', {
       method: 'POST',
@@ -2023,7 +2079,8 @@ async function saveSession() {
       })
     });
     const data = await r.json();
-    if (data.id) state.sessionId = data.id;
+    // A slow response from the previous lesson must not overwrite the new lesson's id
+    if (data.id && (state.epoch || 0) === epoch) state.sessionId = data.id;
   } catch (e) { console.error('saveSession failed:', e); }
 }
 
@@ -2079,10 +2136,13 @@ async function resumeSession(id) {
     const s = await r.json();
     if (s.error) { alert(s.error); return; }
     state.sessionId = s.id;
+    state.epoch = (state.epoch || 0) + 1;
     applySnapshot(s.data || {});
     closeArchive();
     const step = s.last_step && STEP_GO[s.last_step] ? s.last_step : 'lesson';
-    state.maxStepIndex = Math.max(state.maxStepIndex, ORDER.indexOf(step));
+    // Unlock only what THIS lesson reached (max() with the previous lesson's progress let you
+    // jump to steps this lesson never had data for).
+    state.maxStepIndex = ORDER.indexOf(step);
     STEP_GO[step]();
   } catch (e) { alert('Error resuming: ' + e.message); }
 }
@@ -2090,7 +2150,8 @@ async function resumeSession(id) {
 async function deleteSession(id, el) {
   if (!confirm('Delete this archived lesson? This cannot be undone.')) return;
   try {
-    await fetch('/api/sessions/' + id, { method: 'DELETE' });
+    const r = await fetch('/api/sessions/' + id, { method: 'DELETE' });
+    if (!r.ok) throw new Error('server returned ' + r.status);
     el.remove();
     if (id === state.sessionId) state.sessionId = null;
   } catch (e) { alert('Error deleting: ' + e.message); }
@@ -2101,7 +2162,8 @@ async function adapt() {
   if (!state.chosen) { alert('Pick an article first.'); return; }
   $('adaptStatus').textContent = '✨ Adapting with Gemini…';
   try {
-    const text = (state.chosen.content || '') + '\n\n' + (state.chosen.description || '');
+    const stripTrunc = t => (t || '').replace(/\s*\[\+\d+ chars\]\s*$/, '');
+    const text = [stripTrunc(state.chosen.content), state.chosen.description || ''].filter(Boolean).join('\n\n');
     const r = await fetch('/api/adapt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2114,6 +2176,10 @@ async function adapt() {
     });
     const data = await r.json();
     if (data.error) { $('adaptStatus').textContent = 'Error: ' + data.error; return; }
+    // A new adaptation (e.g. different level) invalidates all questions/answers built from the old text
+    resetLessonState();
+    state.maxStepIndex = ORDER.indexOf('lesson');
+    setProgress('lesson');
     state.adapted = data;
     $('adaptedTitle').textContent = data.title;
     $('adaptedText').textContent = data.text;
@@ -2132,6 +2198,8 @@ function renderQuiz(part) {
   const qs = part === 'part1' ? state.part1Questions : state.part2Questions;
   const container = $(part === 'part1' ? 'part1Quiz' : 'part2Quiz');
   container.innerHTML = '';
+  $(part === 'part1' ? 'scoreP1' : 'scoreP2').textContent = '';
+  $(part === 'part1' ? 'btnToPart2' : 'btnToWritingA').classList.add('hidden');
   qs.forEach((q, qi) => {
     const block = document.createElement('div');
     block.className = 'quiz-q';
@@ -2182,6 +2250,7 @@ function renderQuiz(part) {
 function checkQuiz(part) {
   const qs = part === 'part1' ? state.part1Questions : state.part2Questions;
   const container = $(part === 'part1' ? 'part1Quiz' : 'part2Quiz');
+  if (!qs.length) return;
   let correct = 0;
   container.querySelectorAll('.quiz-q').forEach((block, qi) => {
     const q = qs[qi];
@@ -2347,7 +2416,7 @@ function renderWritingFeedback(part, results) {
       '<div class="fb-corrected"><strong>Corrected:</strong> ' + escapeHtml(r.corrected) + '</div>' +
       (errs ? '<div class="fb-errors"><strong>Errors:</strong><ul>' + errs + '</ul></div>' : '') +
       '<div class="fb-comment">' + escapeHtml(r.feedback || '') + '</div>';
-    total += (r.score || 0);
+    total += Number(r.score) || 0;
     n++;
   });
   const avg = n ? Math.round(total / n) : 0;
@@ -2491,7 +2560,7 @@ function renderDictationFeedback(results) {
       '<div class="fb-corrected"><strong>Expected:</strong> ' +
       escapeHtml(res.corrected) + '</div>' +
       '<div class="fb-comment">' + escapeHtml(res.feedback || '') + '</div>';
-    total += res.score || 0;
+    total += Number(res.score) || 0;
     n++;
   });
   const avg = n ? Math.round(total / n) : 0;
@@ -2556,6 +2625,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (v) $('inpVoice').value = v;
   state.voice = $('inpVoice').value;
   state.openrouterKey = $('inpOpenRouter').value;
+  state.geminiKey = $('inpGemini').value.trim();
+  state.newsKey = $('inpNews').value.trim();
 
   $('btnSaveKeys').onclick = saveKeys;
   $('btnLoadNews').onclick = loadNews;
@@ -2625,6 +2696,8 @@ window.addEventListener('DOMContentLoaded', () => {
         srs.style.display = 'none';
         news.style.display = 'block';
       }
+      if (window.__srsStopAll) window.__srsStopAll();
+      const pl = document.getElementById('player'); if (pl) pl.pause();
       localStorage.setItem('french_lab_main_tab', which);
       window.scrollTo(0,0);
     });

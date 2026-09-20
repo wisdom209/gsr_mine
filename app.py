@@ -1,7 +1,8 @@
 """
 French Lab Unified — SRS + News Lab + Cloudinary
 """
-import os, json, re, uuid, asyncio, hashlib, sqlite3
+import os, io, json, re, uuid, asyncio, hashlib, sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 import requests
 from flask import Flask, request, jsonify, Response, send_from_directory
@@ -106,7 +107,20 @@ def _loads(txt: str):
     if txt.startswith("```"):
         txt = re.sub(r"^```[a-zA-Z]*\n?", "", txt)
         txt = re.sub(r"\n?```$", "", txt)
-    return json.loads(txt)
+    out = json.loads(txt)
+    if not isinstance(out, dict):
+        # Every caller does out.get(...); a bare list/str would crash later with a cryptic error
+        raise ValueError("model returned JSON that is not an object")
+    return out
+
+
+def _scrub(msg, *secrets):
+    """Never echo API keys back to the browser / logs (network errors embed the request URL)."""
+    msg = str(msg)
+    for sec in secrets:
+        if sec:
+            msg = msg.replace(sec, "***")
+    return msg
 
 
 def gemini_json(api_key: str, prompt: str, temperature: float = 0.8):
@@ -121,16 +135,17 @@ def gemini_json(api_key: str, prompt: str, temperature: float = 0.8):
             },
         }
         try:
-            r = requests.post(url, params={"key": api_key}, json=payload, timeout=120)
+            r = requests.post(url, headers={"x-goog-api-key": api_key}, json=payload, timeout=120)
         except Exception as e:
-            last_err = f"network: {e}"
+            last_err = _scrub(f"network: {e}", api_key)
             continue
         if r.status_code != 200:
-            last_err = f"{model} → HTTP {r.status_code}: {r.text[:250]}"
+            last_err = _scrub(f"{model} → HTTP {r.status_code}: {r.text[:250]}", api_key)
             continue
         try:
             data = r.json()
-            txt = data["candidates"][0]["content"]["parts"][0]["text"]
+            parts = data["candidates"][0]["content"]["parts"]
+            txt = "".join(p.get("text", "") for p in parts if not p.get("thought"))
             return _loads(txt)
         except Exception as e:
             last_err = f"{model} → parse error: {e}"
@@ -157,10 +172,10 @@ def openrouter_json(api_key: str, prompt: str, temperature: float = 0.8):
                 timeout=120,
             )
         except Exception as e:
-            last_err = f"network: {e}"
+            last_err = _scrub(f"network: {e}", api_key)
             continue
         if r.status_code != 200:
-            last_err = f"{model} → HTTP {r.status_code}: {r.text[:250]}"
+            last_err = _scrub(f"{model} → HTTP {r.status_code}: {r.text[:250]}", api_key)
             continue
         try:
             data = r.json()
@@ -196,7 +211,67 @@ def ai_json(gemini_key: str, openrouter_key: str, prompt: str, temperature: floa
 
 
 def body():
-    return request.get_json(force=True, silent=True) or {}
+    d = request.get_json(force=True, silent=True)
+    return d if isinstance(d, dict) else {}   # a JSON list/str body used to crash every route with a 500
+
+
+def norm_level(level):
+    """LEVEL_GUIDE[level] raised KeyError (-> cryptic 500) for anything but A1/A2/B1/B2."""
+    level = str(level or "").strip().upper()
+    return level if level in LEVEL_GUIDE else "A1"
+
+
+def clean_questions(raw):
+    """Keep only well-formed MCQs. answer_index is coerced to int 0-3 (LLMs often return "2"),
+    otherwise the frontend's strict === comparison never marks the right answer."""
+    out = []
+    for q in raw if isinstance(raw, list) else []:
+        if not isinstance(q, dict):
+            continue
+        opts = q.get("options")
+        if not q.get("question") or not isinstance(opts, list) or len(opts) != 4:
+            continue
+        try:
+            idx = int(q.get("answer_index"))
+        except (TypeError, ValueError):
+            continue
+        if not 0 <= idx <= 3:
+            continue
+        out.append({"question": str(q["question"]), "options": [str(o) for o in opts], "answer_index": idx})
+    return out
+
+
+def clean_results(raw, with_errors=False):
+    """Grader output -> {index:int, score:0-100 number, ...}. A string score made the frontend
+    do `total += "85"` (string concat) and show NaN averages."""
+    out = []
+    for r in raw if isinstance(raw, list) else []:
+        if not isinstance(r, dict):
+            continue
+        try:
+            idx = int(r.get("index"))
+        except (TypeError, ValueError):
+            continue
+        try:
+            score = max(0.0, min(100.0, float(r.get("score"))))
+        except (TypeError, ValueError):
+            score = 0.0
+        item = {"index": idx, "score": round(score), "corrected": str(r.get("corrected") or ""),
+                "feedback": str(r.get("feedback") or "")}
+        if with_errors:
+            errs = r.get("errors")
+            item["errors"] = [str(e) for e in errs] if isinstance(errs, list) else []
+        out.append(item)
+    return out
+
+
+def items_list(d):
+    raw = d.get("items")
+    return [i for i in raw if isinstance(i, dict)] if isinstance(raw, list) else []
+
+
+def no_result(what):
+    return jsonify({"error": f"The AI returned no usable {what}. Please try again."}), 502
 
 
 # ============================================================ Prompts
@@ -413,9 +488,12 @@ def api_news():
             break
 
         last_err = j.get("message") or f"HTTP {r.status_code}"
-        # If it's a key problem, no point retrying.
+        # If it's a key problem or a rate limit, retrying the other strategies only burns quota.
         if r.status_code in (401, 403):
             return jsonify({"error": last_err}), 400
+        if r.status_code == 429:
+            return jsonify({"error": last_err or "NewsAPI rate limit reached",
+                            "hint": "You hit NewsAPI's request limit. Wait a while and retry."}), 429
 
     if data is None:
         return jsonify({
@@ -449,9 +527,12 @@ def api_adapt():
     try:
         out = ai_json(
             d.get("gemini_key", ""), d.get("openrouter_key", ""),
-            p_adapt((d.get("text") or "")[:6000], d.get("level", "A1"), d.get("title", "")),
+            p_adapt((d.get("text") or "")[:6000], norm_level(d.get("level")), d.get("title", "")),
         )
-        return jsonify({"title": out.get("title", d.get("title", "")), "text": out.get("text", "")})
+        adapted = str(out.get("text") or "").strip()
+        if not adapted:
+            return no_result("article")
+        return jsonify({"title": str(out.get("title") or d.get("title") or ""), "text": adapted})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -462,12 +543,13 @@ def api_questions():
     try:
         out = ai_json(
             d.get("gemini_key", ""), d.get("openrouter_key", ""),
-            p_questions((d.get("text") or "")[:6000], d.get("level", "A1"),
+            p_questions((d.get("text") or "")[:6000], norm_level(d.get("level")),
                         variant=d.get("variant", "first")),
             temperature=0.9,
         )
-        qs = [q for q in out.get("questions", [])
-              if q.get("question") and len(q.get("options", [])) == 4]
+        qs = clean_questions(out.get("questions"))
+        if not qs:
+            return no_result("questions")
         return jsonify({"questions": qs})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -478,8 +560,12 @@ def api_writing_a():
     d = body()
     try:
         out = ai_json(d.get("gemini_key", ""), d.get("openrouter_key", ""),
-                      p_writing_a((d.get("text") or "")[:6000], d.get("level", "A1")))
-        return jsonify({"questions": out.get("questions", [])})
+                      p_writing_a((d.get("text") or "")[:6000], norm_level(d.get("level"))))
+        qs = [q for q in out.get("questions", []) if isinstance(q, dict) and q.get("question")] \
+            if isinstance(out.get("questions"), list) else []
+        if not qs:
+            return no_result("questions")
+        return jsonify({"questions": qs})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -489,8 +575,12 @@ def api_writing_b():
     d = body()
     try:
         out = ai_json(d.get("gemini_key", ""), d.get("openrouter_key", ""),
-                      p_writing_b((d.get("text") or "")[:6000], d.get("level", "A1")))
-        return jsonify({"items": out.get("items", [])})
+                      p_writing_b((d.get("text") or "")[:6000], norm_level(d.get("level"))))
+        items = [i for i in out.get("items", []) if isinstance(i, dict) and i.get("structure")] \
+            if isinstance(out.get("items"), list) else []
+        if not items:
+            return no_result("items")
+        return jsonify({"items": items})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -500,9 +590,9 @@ def api_check_writing():
     d = body()
     try:
         out = ai_json(d.get("gemini_key", ""), d.get("openrouter_key", ""),
-                      p_check_writing(d.get("items", []), d.get("level", "A1")),
+                      p_check_writing(items_list(d), norm_level(d.get("level"))),
                       temperature=0.3)
-        return jsonify({"results": out.get("results", [])})
+        return jsonify({"results": clean_results(out.get("results"), with_errors=True)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -512,8 +602,12 @@ def api_dictation():
     d = body()
     try:
         out = ai_json(d.get("gemini_key", ""), d.get("openrouter_key", ""),
-                      p_dictation((d.get("text") or "")[:6000], d.get("level", "A1")))
-        return jsonify({"sentences": out.get("sentences", [])})
+                      p_dictation((d.get("text") or "")[:6000], norm_level(d.get("level"))))
+        sents = [x.strip() for x in out.get("sentences", []) if isinstance(x, str) and x.strip()] \
+            if isinstance(out.get("sentences"), list) else []
+        if not sents:
+            return no_result("sentences")
+        return jsonify({"sentences": sents})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -523,9 +617,9 @@ def api_check_dictation():
     d = body()
     try:
         out = ai_json(d.get("gemini_key", ""), d.get("openrouter_key", ""),
-                      p_check_dictation(d.get("items", []), d.get("level", "A1")),
+                      p_check_dictation(items_list(d), norm_level(d.get("level"))),
                       temperature=0.2)
-        return jsonify({"results": out.get("results", [])})
+        return jsonify({"results": clean_results(out.get("results"))})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -536,7 +630,7 @@ def api_cheatsheet():
     try:
         out = ai_json(
             d.get("gemini_key", ""), d.get("openrouter_key", ""),
-            p_cheatsheet((d.get("text") or "")[:6000], d.get("level", "A1"),
+            p_cheatsheet((d.get("text") or "")[:6000], norm_level(d.get("level")),
                          d.get("structures", []), d.get("sentences", [])),
             temperature=0.5,
         )
@@ -550,35 +644,56 @@ def api_cheatsheet():
 
 
 # ============================================================ Archive / sessions
+# Session ids are used in Cloudinary public_ids, so only allow a safe alphabet
+# (the old code accepted e.g. "../../x" from the client).
+SID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def session_public_id(sid):
+    # Cloudinary *raw* assets keep their file extension as part of the public_id, and
+    # `format=` is ignored for raw uploads. Store the ".json" explicitly so the delivery
+    # URL we build later actually exists.
+    return f"{CLOUDINARY_FOLDER}/sessions/{sid}.json"
+
+
+def legacy_session_public_ids(sid):
+    return [f"{CLOUDINARY_FOLDER}/sessions/{sid}"]   # what earlier versions uploaded
+
 
 @app.post("/api/sessions")
 def api_save_session():
     """Create or update an archived lesson session. With Cloudinary backup."""
     d = body()
-    sid = (d.get("id") or "").strip() or str(uuid.uuid4())
-    title = (d.get("title") or "Untitled lesson").strip()
-    source = (d.get("source") or "").strip()
-    level = (d.get("level") or "A1").strip()
-    last_step = (d.get("last_step") or "news").strip()
-    data = json.dumps(d.get("data") or {}, ensure_ascii=False)
+    sid = str(d.get("id") or "").strip() or str(uuid.uuid4())
+    if not SID_RE.match(sid):
+        return jsonify({"error": "Invalid session id"}), 400
+    title = str(d.get("title") or "Untitled lesson").strip() or "Untitled lesson"
+    source = str(d.get("source") or "").strip()
+    level = norm_level(d.get("level"))
+    last_step = str(d.get("last_step") or "news").strip()
+    data_obj = d.get("data") if isinstance(d.get("data"), dict) else {}
+    data = json.dumps(data_obj, ensure_ascii=False)
     ts = now_iso()
 
-    conn = get_db()
-    row = conn.execute("SELECT id FROM sessions WHERE id = ?", (sid,)).fetchone()
-    if row:
-        conn.execute("UPDATE sessions SET updated_at=?, title=?, source=?, level=?, last_step=?, data=? WHERE id=?", (ts, title, source, level, last_step, data, sid),)
-    else:
-        conn.execute("INSERT INTO sessions (id, created_at, updated_at, title, source, level, last_step, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (sid, ts, ts, title, source, level, last_step, data),)
-    conn.commit()
-    conn.close()
+    with closing(get_db()) as conn:
+        conn.execute(
+            "INSERT INTO sessions (id, created_at, updated_at, title, source, level, last_step, data) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET updated_at=excluded.updated_at, title=excluded.title, "
+            "source=excluded.source, level=excluded.level, last_step=excluded.last_step, data=excluded.data",
+            (sid, ts, ts, title, source, level, last_step, data),
+        )
+        conn.commit()
+        created_at = conn.execute("SELECT created_at FROM sessions WHERE id = ?", (sid,)).fetchone()["created_at"]
 
     if USE_CLOUDINARY and cloudinary_uploader:
         try:
-            tmp_path = os.path.join("/tmp", f"{sid}.json")
-            with open(tmp_path, "w", encoding="utf-8") as f:
-                f.write(json.dumps({"id": sid, "title": title, "source": source, "level": level, "last_step": last_step, "created_at": ts, "updated_at": ts, "data": d.get("data") or {}}, ensure_ascii=False))
-            cloudinary_uploader.upload(tmp_path, resource_type="raw", public_id=f"{CLOUDINARY_FOLDER}/sessions/{sid}", overwrite=True, format="json")
-            os.remove(tmp_path)
+            payload = json.dumps({"id": sid, "title": title, "source": source, "level": level,
+                                  "last_step": last_step, "created_at": created_at, "updated_at": ts,
+                                  "data": data_obj}, ensure_ascii=False).encode("utf-8")
+            # BytesIO instead of a hand-built /tmp/<client-supplied-id>.json path
+            cloudinary_uploader.upload(io.BytesIO(payload), resource_type="raw",
+                                       public_id=session_public_id(sid), overwrite=True, invalidate=True)
         except Exception as e:
             print(f"Cloudinary session backup failed: {e}")
 
@@ -587,9 +702,8 @@ def api_save_session():
 
 @app.get("/api/sessions")
 def api_list_sessions():
-    conn = get_db()
-    rows = conn.execute("SELECT id, created_at, updated_at, title, source, level, last_step FROM sessions ORDER BY updated_at DESC LIMIT 200").fetchall()
-    conn.close()
+    with closing(get_db()) as conn:
+        rows = conn.execute("SELECT id, created_at, updated_at, title, source, level, last_step FROM sessions ORDER BY updated_at DESC LIMIT 200").fetchall()
     if not rows and USE_CLOUDINARY and cloudinary_api:
         try:
             res = cloudinary_api.resources(type="upload", resource_type="raw", prefix=f"{CLOUDINARY_FOLDER}/sessions/", max_results=100)
@@ -597,7 +711,12 @@ def api_list_sessions():
             for r in res.get("resources", []):
                 pid = r.get("public_id", "")
                 sid = pid.split("/")[-1]
+                if sid.endswith(".json"):
+                    sid = sid[:-5]
+                if not SID_RE.match(sid):
+                    continue
                 sessions.append({"id": sid, "created_at": r.get("created_at"), "updated_at": r.get("created_at"), "title": sid, "source": "cloudinary", "level": "?", "last_step": "lesson"})
+            sessions.sort(key=lambda x: x.get("updated_at") or "", reverse=True)
             return jsonify({"sessions": sessions, "cloudinary": True, "note": "Listed from Cloudinary — local DB empty."})
         except Exception as e:
             print(f"Cloudinary list failed: {e}")
@@ -606,9 +725,8 @@ def api_list_sessions():
 
 @app.get("/api/sessions/<sid>")
 def api_get_session(sid):
-    conn = get_db()
-    row = conn.execute("SELECT * FROM sessions WHERE id = ?", (sid,)).fetchone()
-    conn.close()
+    with closing(get_db()) as conn:
+        row = conn.execute("SELECT * FROM sessions WHERE id = ?", (sid,)).fetchone()
     if row:
         out = dict(row)
         try:
@@ -617,59 +735,89 @@ def api_get_session(sid):
             out["data"] = {}
         return jsonify(out)
 
-    if USE_CLOUDINARY and cloudinary_utils:
-        try:
-            url, _ = cloudinary_utils.cloudinary_url(f"{CLOUDINARY_FOLDER}/sessions/{sid}", resource_type="raw", format="json")
-            r = requests.get(url, timeout=15)
-            if r.status_code == 200:
+    if USE_CLOUDINARY and cloudinary_utils and SID_RE.match(sid):
+        for pid in [session_public_id(sid)] + legacy_session_public_ids(sid):
+            try:
+                url, _ = cloudinary_utils.cloudinary_url(pid, resource_type="raw")
+                r = requests.get(url, timeout=15)
+                if r.status_code != 200:
+                    continue
                 j = r.json()
-                conn = get_db()
-                conn.execute("INSERT OR REPLACE INTO sessions (id, created_at, updated_at, title, source, level, last_step, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                             (j.get("id", sid), j.get("created_at", now_iso()), j.get("updated_at", now_iso()), j.get("title",""), j.get("source",""), j.get("level","A1"), j.get("last_step","lesson"), json.dumps(j.get("data",{}))))
-                conn.commit()
-                conn.close()
-                return jsonify({"id": sid, "title": j.get("title"), "source": j.get("source"), "level": j.get("level"), "last_step": j.get("last_step"), "data": j.get("data",{}), "cloudinary": True})
-        except Exception as e:
-            print(f"Cloudinary restore failed: {e}")
+                if not isinstance(j, dict):
+                    continue
+                data_obj = j.get("data") if isinstance(j.get("data"), dict) else {}
+                with closing(get_db()) as conn:
+                    conn.execute("INSERT OR REPLACE INTO sessions (id, created_at, updated_at, title, source, level, last_step, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                 (sid, j.get("created_at") or now_iso(), j.get("updated_at") or now_iso(), j.get("title") or "",
+                                  j.get("source") or "", norm_level(j.get("level")), j.get("last_step") or "lesson",
+                                  json.dumps(data_obj, ensure_ascii=False)))
+                    conn.commit()
+                return jsonify({"id": sid, "title": j.get("title"), "source": j.get("source"), "level": j.get("level"),
+                                "last_step": j.get("last_step"), "data": data_obj, "cloudinary": True})
+            except Exception as e:
+                print(f"Cloudinary restore failed ({pid}): {e}")
 
     return jsonify({"error": "Session not found"}), 404
 
 
 @app.delete("/api/sessions/<sid>")
 def api_delete_session(sid):
-    conn = get_db()
-    conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
-    conn.commit()
-    conn.close()
-    if USE_CLOUDINARY and cloudinary_uploader:
-        try:
-            cloudinary_uploader.destroy(f"{CLOUDINARY_FOLDER}/sessions/{sid}", resource_type="raw")
-        except Exception as e:
-            print(f"Cloudinary delete session failed: {e}")
+    with closing(get_db()) as conn:
+        conn.execute("DELETE FROM sessions WHERE id = ?", (sid,))
+        conn.commit()
+    if USE_CLOUDINARY and cloudinary_uploader and SID_RE.match(sid):
+        for pid in [session_public_id(sid)] + legacy_session_public_ids(sid):
+            try:
+                cloudinary_uploader.destroy(pid, resource_type="raw", invalidate=True)
+            except Exception as e:
+                print(f"Cloudinary delete session failed ({pid}): {e}")
     return jsonify({"ok": True})
+
+
+MAX_TTS_CHARS = 6000
+RATE_RE = re.compile(r"^[+-]\d{1,3}%$")
+VOICE_RE = re.compile(r"^[A-Za-z0-9_-]{3,64}$")
 
 
 @app.post("/api/tts")
 def api_tts():
     d = body()
-    text = (d.get("text") or "").strip()
-    voice = d.get("voice", "fr-FR-DeniseNeural")
-    rate = d.get("rate", "+0%")
+    text = str(d.get("text") or "").strip()
+    voice = str(d.get("voice") or "fr-FR-DeniseNeural")
+    rate = str(d.get("rate") or "+0%")
     if not text:
         return jsonify({"error": "No text"}), 400
+    if len(text) > MAX_TTS_CHARS:
+        return jsonify({"error": f"Text too long (max {MAX_TTS_CHARS} characters)"}), 400
+    if not VOICE_RE.match(voice):
+        return jsonify({"error": "Invalid voice"}), 400
+    if not RATE_RE.match(rate):
+        return jsonify({"error": "Invalid rate (expected e.g. '-25%')"}), 400
 
     sha = hashlib.sha1(f"{voice}|{rate}|{text}".encode("utf-8")).hexdigest()
     name = sha + ".mp3"
     public_id = f"{CLOUDINARY_FOLDER}/audio/{sha}"
     path = os.path.join(AUDIO_DIR, name)
 
-    if not os.path.exists(path):
+    # A failed/interrupted earlier run used to leave a partial (or empty) file at `path`, and
+    # os.path.exists() then served that broken audio forever. Synthesize into a unique temp file
+    # and atomically move it into place only when it is complete (also safe for concurrent requests).
+    if not (os.path.exists(path) and os.path.getsize(path) > 0):
+        tmp = f"{path}.{uuid.uuid4().hex}.tmp"
         try:
             import edge_tts
+
             async def gen():
-                await edge_tts.Communicate(text, voice, rate=rate).save(path)
+                await edge_tts.Communicate(text, voice, rate=rate).save(tmp)
             asyncio.run(gen())
+            if not os.path.exists(tmp) or os.path.getsize(tmp) == 0:
+                raise RuntimeError("no audio produced")
+            os.replace(tmp, path)
         except Exception as e:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
             return jsonify({"error": f"TTS failed: {e}"}), 500
 
     if USE_CLOUDINARY and cloudinary_uploader and cloudinary_api and cloudinary_utils:
@@ -1973,5 +2121,12 @@ def app_js():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
+    # Never expose the Werkzeug debugger (interactive RCE) to the network. Debug is opt-in and
+    # we only bind all interfaces on a host that sets PORT-style env (e.g. Render sets RENDER=true).
+    debug = os.getenv("FLASK_DEBUG", "").lower() in ("1", "true", "yes")
+    host = os.getenv("HOST") or ("0.0.0.0" if os.getenv("RENDER") else "127.0.0.1")
+    if debug and host != "127.0.0.1":
+        print("!! FLASK_DEBUG ignored for non-local host (debugger would be remotely exploitable)")
+        debug = False
     print(f"-> open http://127.0.0.1:{port}  Cloudinary={'ON' if USE_CLOUDINARY else 'OFF'}")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host=host, port=port, debug=debug)
