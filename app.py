@@ -55,7 +55,7 @@ else:
 
 MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
 # OpenRouter (Qwen) fallback models, tried in order if Gemini fails (or if no Gemini key was given).
-OPENROUTER_MODELS = ["qwen/qwen3-8b:free", "qwen/qwen3-4b:free", "qwen/qwen3-next-80b-a3b-instruct:free"]
+OPENROUTER_MODELS = ["qwen/qwen3.8-27b:free", "thinkingmachines/inkling:free","nvidia/nemotron-3-ultra-550b-a55b:free"]
 
 
 # ============================================================ Archive (sqlite)
